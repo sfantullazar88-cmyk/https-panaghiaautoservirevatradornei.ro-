@@ -289,30 +289,40 @@ const Order = ({ cart = [], onUpdateCart, onRemoveFromCart, onClearCart }) => {
               {/* Payment Method */}
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Metoda de plată</label>
-                <div className="flex gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <button
+                    type="button"
                     onClick={() => setPaymentMethod('cash')}
-                    className={`flex-1 py-3 rounded-xl font-medium transition-all ${
+                    className={`flex items-center justify-center gap-2 py-3 rounded-xl font-medium transition-all ${
                       paymentMethod === 'cash'
                         ? 'bg-[#D4A847] text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                     data-testid="cash-payment-btn"
                   >
+                    <Banknote className="w-5 h-5" />
                     Numerar
                   </button>
                   <button
+                    type="button"
                     onClick={() => setPaymentMethod('card')}
-                    className={`flex-1 py-3 rounded-xl font-medium transition-all ${
+                    className={`flex items-center justify-center gap-2 py-3 rounded-xl font-medium transition-all ${
                       paymentMethod === 'card'
                         ? 'bg-[#D4A847] text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                     data-testid="card-payment-btn"
                   >
-                    Card
+                    <CreditCard className="w-5 h-5" />
+                    Card Online
                   </button>
                 </div>
+                {paymentMethod === 'card' && (
+                  <p className="text-sm text-gray-500 mt-2 flex items-center gap-1">
+                    <CreditCard className="w-4 h-4" />
+                    Veți fi redirecționat către pagina securizată Stripe pentru plată
+                  </p>
+                )}
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4" data-testid="order-form">
