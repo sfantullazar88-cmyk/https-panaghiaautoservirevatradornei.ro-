@@ -262,6 +262,7 @@ async def create_category_admin(
     doc = category_obj.model_dump()
     
     await db.menu_categories.insert_one(doc)
+    doc.pop("_id", None)  # Remove MongoDB ObjectId before returning
     return doc
 
 
@@ -315,6 +316,7 @@ async def create_item_admin(
     doc['updated_at'] = doc['updated_at'].isoformat()
     
     await db.menu_items.insert_one(doc)
+    doc.pop("_id", None)  # Remove MongoDB ObjectId before returning
     return doc
 
 
