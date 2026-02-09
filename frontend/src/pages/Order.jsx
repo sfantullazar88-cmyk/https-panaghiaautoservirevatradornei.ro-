@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft, Phone, CheckCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft, Phone, CheckCircle, CreditCard, Banknote } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { ordersApi, restaurantApi } from '../services/api';
+import { paymentsApi } from '../services/adminApi';
 
 const Order = ({ cart = [], onUpdateCart, onRemoveFromCart, onClearCart }) => {
+  const [searchParams] = useSearchParams();
   const [orderType, setOrderType] = useState('pickup');
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [customerInfo, setCustomerInfo] = useState({
@@ -17,6 +19,7 @@ const Order = ({ cart = [], onUpdateCart, onRemoveFromCart, onClearCart }) => {
   const [orderResult, setOrderResult] = useState(null);
   const [error, setError] = useState(null);
   const [restaurantInfo, setRestaurantInfo] = useState({ phone: '0746 254 162' });
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   useEffect(() => {
     const fetchRestaurantInfo = async () => {
@@ -28,7 +31,31 @@ const Order = ({ cart = [], onUpdateCart, onRemoveFromCart, onClearCart }) => {
       }
     };
     fetchRestaurantInfo();
-  }, []);
+
+    // Check for payment success
+    const sessionId = searchParams.get('session_id');
+    if (sessionId) {
+      checkPaymentStatus(sessionId);
+    }
+
+    // Check for cancelled payment
+    if (searchParams.get('cancelled')) {
+      setError('Plata a fost anulată. Puteți încerca din nou.');
+    }
+  }, [searchParams]);
+
+  const checkPaymentStatus = async (sessionId) => {
+    try {
+      const status = await paymentsApi.getPaymentStatus(sessionId);
+      if (status.payment_status === 'paid') {
+        setPaymentSuccess(true);
+        setOrderResult({ order_number: `Plată confirmată`, total: status.amount_total });
+        if (onClearCart) onClearCart();
+      }
+    } catch (err) {
+      console.error('Error checking payment status:', err);
+    }
+  };
 
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const deliveryFee = orderType === 'delivery' ? 10 : 0;
@@ -59,6 +86,25 @@ const Order = ({ cart = [], onUpdateCart, onRemoveFromCart, onClearCart }) => {
       };
 
       const result = await ordersApi.create(orderData);
+
+      // If card payment, redirect to Stripe
+      if (paymentMethod === 'card') {
+        try {
+          const checkoutData = await paymentsApi.createCheckout(
+            result.id,
+            window.location.origin
+          );
+          // Redirect to Stripe Checkout
+          window.location.href = checkoutData.checkout_url;
+          return;
+        } catch (stripeErr) {
+          console.error('Stripe error:', stripeErr);
+          setError('Plata online nu este disponibilă momentan. Vă rugăm să alegeți plata în numerar.');
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       setOrderResult(result);
       if (onClearCart) onClearCart();
     } catch (err) {
