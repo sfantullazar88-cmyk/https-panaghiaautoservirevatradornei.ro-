@@ -63,6 +63,18 @@ const Footer = () => {
             </ul>
           </div>
 
+          {/* Legal Links */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Informații Legale</h3>
+            <ul className="space-y-2">
+              <li><Link to="/termeni-conditii" className="text-gray-400 hover:text-[#D4A847] transition-colors">Termeni și Condiții</Link></li>
+              <li><Link to="/confidentialitate" className="text-gray-400 hover:text-[#D4A847] transition-colors">Politica de Confidențialitate</Link></li>
+              <li><Link to="/cookie" className="text-gray-400 hover:text-[#D4A847] transition-colors">Politica Cookie</Link></li>
+              <li><Link to="/anulare-rambursare" className="text-gray-400 hover:text-[#D4A847] transition-colors">Anulare și Rambursare</Link></li>
+              <li><Link to="/gdpr" className="text-gray-400 hover:text-[#D4A847] transition-colors">GDPR</Link></li>
+            </ul>
+          </div>
+
           {/* Contact Info */}
           <div>
             <h3 className="text-lg font-semibold mb-4">Contact</h3>
