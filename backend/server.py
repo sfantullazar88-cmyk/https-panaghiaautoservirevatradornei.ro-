@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, Request
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -11,7 +11,7 @@ import uuid
 from datetime import datetime, timezone
 
 # Import routes
-from routes import menu, orders, restaurant
+from routes import menu, orders, restaurant, auth, admin, payments
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -25,9 +25,16 @@ db = client[os.environ['DB_NAME']]
 menu.set_db(db)
 orders.set_db(db)
 restaurant.set_db(db)
+auth.set_db(db)
+admin.set_db(db)
+payments.set_db(db)
 
-# Create the main app without a prefix
-app = FastAPI(title="Panaghia API", description="API for Panaghia Autoservire Vatra Dornei", version="1.0.0")
+# Create the main app
+app = FastAPI(
+    title="Panaghia API",
+    description="API for Panaghia Autoservire Vatra Dornei",
+    version="2.0.0"
+)
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
@@ -49,7 +56,7 @@ class StatusCheckCreate(BaseModel):
 # Health check route
 @api_router.get("/")
 async def root():
-    return {"message": "Panaghia API is running", "version": "1.0.0"}
+    return {"message": "Panaghia API is running", "version": "2.0.0"}
 
 
 @api_router.get("/health")
@@ -80,10 +87,20 @@ async def get_status_checks():
     return status_checks
 
 
+# Stripe webhook at root level (outside /api for Stripe requirements)
+@app.post("/api/webhook/stripe")
+async def stripe_webhook_root(request: Request):
+    """Handle Stripe webhooks - root level endpoint"""
+    return await payments.stripe_webhook(request)
+
+
 # Include all routers
 api_router.include_router(menu.router)
 api_router.include_router(orders.router)
 api_router.include_router(restaurant.router)
+api_router.include_router(auth.router)
+api_router.include_router(admin.router)
+api_router.include_router(payments.router)
 
 # Include the router in the main app
 app.include_router(api_router)
@@ -107,7 +124,7 @@ logger = logging.getLogger(__name__)
 @app.on_event("startup")
 async def startup_event():
     """Initialize database with default data if empty"""
-    logger.info("Starting Panaghia API...")
+    logger.info("Starting Panaghia API v2.0...")
     
     # Check if categories exist, if not seed the database
     categories_count = await db.menu_categories.count_documents({})
@@ -115,6 +132,65 @@ async def startup_event():
         logger.info("Seeding database with initial data...")
         await seed_database()
         logger.info("Database seeded successfully!")
+    
+    # Create admin user if not exists
+    admin_email = os.environ.get('ADMIN_EMAIL', 'panaghia8688@yahoo.com')
+    admin_exists = await db.admin_users.find_one({"email": admin_email})
+    if not admin_exists:
+        logger.info(f"Creating admin user: {admin_email}")
+        await create_admin_user(admin_email)
+        logger.info("Admin user created successfully!")
+    
+    # Create indexes
+    await create_indexes()
+
+
+async def create_admin_user(email: str):
+    """Create the default admin user"""
+    from routes.auth import hash_password
+    
+    # Default password - CHANGE THIS!
+    default_password = "Panaghia2026!"
+    
+    admin_user = {
+        "id": str(uuid.uuid4()),
+        "email": email.lower(),
+        "hashed_password": hash_password(default_password),
+        "is_active": True,
+        "is_superadmin": True,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "last_login": None,
+        "failed_login_attempts": 0,
+        "locked_until": None
+    }
+    
+    await db.admin_users.insert_one(admin_user)
+    logger.info(f"Admin user created with email: {email}")
+    logger.info(f"Default password: {default_password}")
+
+
+async def create_indexes():
+    """Create database indexes for better performance"""
+    # Orders indexes
+    await db.orders.create_index("id", unique=True)
+    await db.orders.create_index("order_number", unique=True)
+    await db.orders.create_index("status")
+    await db.orders.create_index("created_at")
+    await db.orders.create_index("order_type")
+    
+    # Menu indexes
+    await db.menu_items.create_index("id", unique=True)
+    await db.menu_items.create_index("category_id")
+    await db.menu_items.create_index("is_popular")
+    
+    # Admin users
+    await db.admin_users.create_index("email", unique=True)
+    
+    # Payment transactions
+    await db.payment_transactions.create_index("session_id", unique=True)
+    await db.payment_transactions.create_index("order_id")
+    
+    logger.info("Database indexes created")
 
 
 async def seed_database():
