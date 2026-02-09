@@ -14,7 +14,7 @@ const Home = () => {
       <section 
         className="relative h-screen flex items-center justify-center"
         style={{
-          backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1920&q=80')`,
+          backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://customer-assets.emergentagent.com/job_food-delivery-240/artifacts/25k2bpta_4.jpg')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}

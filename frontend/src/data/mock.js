@@ -15,7 +15,7 @@ export const restaurantInfo = {
   heroTitle: "Mancare gatita zilnic,",
   heroTitle2: "gustoasa si satioasa",
   heroSubtitle: "Autoservire & delivery rapid in Vatra Dornei",
-  heroImage: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1920&q=80"
+  heroImage: "https://customer-assets.emergentagent.com/job_food-delivery-240/artifacts/25k2bpta_4.jpg"
 };
 
 export const menuCategories = [
