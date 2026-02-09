@@ -157,6 +157,48 @@ function AppContent() {
           }
         />
 
+        {/* Legal Routes */}
+        <Route
+          path="/confidentialitate"
+          element={
+            <PublicLayout cartItemCount={cartItemCount}>
+              <PrivacyPolicy />
+            </PublicLayout>
+          }
+        />
+        <Route
+          path="/termeni-conditii"
+          element={
+            <PublicLayout cartItemCount={cartItemCount}>
+              <TermsConditions />
+            </PublicLayout>
+          }
+        />
+        <Route
+          path="/cookie"
+          element={
+            <PublicLayout cartItemCount={cartItemCount}>
+              <CookiePolicy />
+            </PublicLayout>
+          }
+        />
+        <Route
+          path="/anulare-rambursare"
+          element={
+            <PublicLayout cartItemCount={cartItemCount}>
+              <RefundPolicy />
+            </PublicLayout>
+          }
+        />
+        <Route
+          path="/gdpr"
+          element={
+            <PublicLayout cartItemCount={cartItemCount}>
+              <GDPRConsent />
+            </PublicLayout>
+          }
+        />
+
         {/* Admin Routes */}
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route
