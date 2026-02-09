@@ -82,6 +82,17 @@ async def create_order(order_data: dict):
     
     # Return without _id
     doc.pop('_id', None)
+    
+    # Send email notification (async, don't block response)
+    try:
+        from services.email_service import send_new_order_notification
+        import asyncio
+        asyncio.create_task(send_new_order_notification(doc))
+    except Exception as e:
+        # Log but don't fail the order creation
+        import logging
+        logging.error(f"Failed to queue email notification: {e}")
+    
     return doc
 
 
