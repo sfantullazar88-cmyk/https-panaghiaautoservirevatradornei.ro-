@@ -1,34 +1,89 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Star, UtensilsCrossed, Package, Phone, Clock, MapPin, ChefHat, Truck, Award } from 'lucide-react';
-import { restaurantInfo, menuItems, reviews, dailyMenu } from '../data/mock';
+import { menuApi, restaurantApi } from '../services/api';
 
 const Home = () => {
-  const popularItems = menuItems.filter(item => item.isPopular).slice(0, 4);
+  const [restaurantInfo, setRestaurantInfo] = useState(null);
+  const [popularItems, setPopularItems] = useState([]);
+  const [reviews, setReviews] = useState([]);
+  const [dailyMenu, setDailyMenu] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [infoRes, itemsRes, reviewsRes, dailyRes] = await Promise.all([
+          restaurantApi.getInfo(),
+          menuApi.getItems(null, true),
+          restaurantApi.getReviews(),
+          menuApi.getDailyMenu()
+        ]);
+        
+        setRestaurantInfo(infoRes);
+        setPopularItems(itemsRes.slice(0, 4));
+        setReviews(reviewsRes.slice(0, 3));
+        setDailyMenu(dailyRes);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   const today = new Date().toLocaleDateString('ro-RO', { weekday: 'long' });
-  const todayMenu = dailyMenu.find(d => d.day.toLowerCase() === today.toLowerCase().charAt(0).toUpperCase() + today.toLowerCase().slice(1));
+  const todayCapitalized = today.charAt(0).toUpperCase() + today.slice(1);
+  const todayMenu = dailyMenu.find(d => d.day.toLowerCase() === todayCapitalized.toLowerCase());
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" data-testid="home-loading">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#D4A847]"></div>
+      </div>
+    );
+  }
+
+  // Default values if API fails
+  const info = restaurantInfo || {
+    name: "Panaghia",
+    tagline: "Autoservire Vatra Dornei",
+    phone: "0746 254 162",
+    address: "Str. Dornelor nr. 10, Vatra Dornei",
+    rating: 5,
+    review_count: 0,
+    schedule: { weekdays: "11:00 - 17:00", weekend: "Închis" },
+    hero_title: "Mancare gatita zilnic,",
+    hero_title2: "gustoasa si satioasa",
+    hero_subtitle: "Autoservire & delivery rapid in Vatra Dornei",
+    hero_image: "https://customer-assets.emergentagent.com/job_food-delivery-240/artifacts/25k2bpta_4.jpg"
+  };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen" data-testid="home-page">
       {/* Hero Section */}
       <section 
         className="relative h-screen flex items-center justify-center"
         style={{
-          backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://customer-assets.emergentagent.com/job_food-delivery-240/artifacts/25k2bpta_4.jpg')`,
+          backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('${info.hero_image}')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}
+        data-testid="hero-section"
       >
         <div className="text-center text-white px-4 max-w-4xl mx-auto">
           <h1 
             className="text-5xl md:text-7xl mb-4 leading-tight"
             style={{ fontFamily: 'Playfair Display, serif', fontStyle: 'italic' }}
+            data-testid="hero-title"
           >
-            {restaurantInfo.heroTitle}<br/>
-            {restaurantInfo.heroTitle2}
+            {info.hero_title}<br/>
+            {info.hero_title2}
           </h1>
-          <p className="text-lg md:text-xl text-gray-200 mb-8 italic">
-            {restaurantInfo.heroSubtitle}
+          <p className="text-lg md:text-xl text-gray-200 mb-8 italic" data-testid="hero-subtitle">
+            {info.hero_subtitle}
           </p>
           
           {/* CTA Buttons */}
@@ -36,6 +91,7 @@ const Home = () => {
             <Link
               to="/meniu"
               className="flex items-center gap-2 bg-[#D4A847] text-white px-6 py-3 rounded-full hover:bg-[#c49a3d] transition-all hover:scale-105"
+              data-testid="menu-cta-btn"
             >
               <UtensilsCrossed className="w-5 h-5" />
               <span className="font-medium">Vezi meniul</span>
@@ -43,13 +99,15 @@ const Home = () => {
             <Link
               to="/comanda"
               className="flex items-center gap-2 bg-gray-900/80 text-white px-6 py-3 rounded-full hover:bg-gray-900 transition-all hover:scale-105 backdrop-blur-sm"
+              data-testid="order-cta-btn"
             >
               <Package className="w-5 h-5" />
               <span className="font-medium">Comanda la pachet</span>
             </Link>
             <a
-              href={`tel:${restaurantInfo.phone.replace(/\s/g, '')}`}
+              href={`tel:${info.phone?.replace(/\s/g, '')}`}
               className="flex items-center gap-2 border-2 border-white text-white px-6 py-3 rounded-full hover:bg-white hover:text-gray-900 transition-all hover:scale-105"
+              data-testid="call-cta-btn"
             >
               <Phone className="w-5 h-5" />
               <span className="font-medium">Suna acum</span>
@@ -57,13 +115,13 @@ const Home = () => {
           </div>
 
           {/* Rating */}
-          <div className="flex items-center justify-center gap-2">
+          <div className="flex items-center justify-center gap-2" data-testid="hero-rating">
             <div className="flex">
               {[...Array(5)].map((_, i) => (
                 <Star key={i} className="w-5 h-5 text-[#D4A847] fill-[#D4A847]" />
               ))}
             </div>
-            <span className="text-white/80">{restaurantInfo.rating} • {restaurantInfo.reviewCount} recenzii</span>
+            <span className="text-white/80">{info.rating} • {info.review_count} recenzii</span>
           </div>
         </div>
 
@@ -76,7 +134,7 @@ const Home = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-16 bg-[#FFF8E7]">
+      <section className="py-16 bg-[#FFF8E7]" data-testid="features-section">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="flex items-center gap-4 p-6 bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow">
@@ -112,12 +170,12 @@ const Home = () => {
 
       {/* Daily Menu Section */}
       {todayMenu && (
-        <section className="py-16 bg-white">
+        <section className="py-16 bg-white" data-testid="daily-menu-section">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <span className="text-[#D4A847] font-medium">Meniul Zilei</span>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mt-2" style={{ fontFamily: 'Playfair Display, serif' }}>
-                {today.charAt(0).toUpperCase() + today.slice(1)}
+                {todayCapitalized}
               </h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-2xl mx-auto">
@@ -135,81 +193,86 @@ const Home = () => {
       )}
 
       {/* Popular Items Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <span className="text-[#D4A847] font-medium">Preferatele Clienților</span>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mt-2" style={{ fontFamily: 'Playfair Display, serif' }}>
-              Cele Mai Populare
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {popularItems.map((item) => (
-              <div key={item.id} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all hover:-translate-y-1 group">
-                <div className="relative h-48 overflow-hidden">
-                  <img 
-                    src={item.image} 
-                    alt={item.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                  <div className="absolute top-3 left-3 bg-[#D4A847] text-white text-xs px-3 py-1 rounded-full">
-                    Popular
+      {popularItems.length > 0 && (
+        <section className="py-16 bg-gray-50" data-testid="popular-items-section">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <span className="text-[#D4A847] font-medium">Preferatele Clienților</span>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mt-2" style={{ fontFamily: 'Playfair Display, serif' }}>
+                Cele Mai Populare
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {popularItems.map((item) => (
+                <div key={item.id} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all hover:-translate-y-1 group" data-testid={`popular-item-${item.id}`}>
+                  <div className="relative h-48 overflow-hidden">
+                    <img 
+                      src={item.image} 
+                      alt={item.name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                    <div className="absolute top-3 left-3 bg-[#D4A847] text-white text-xs px-3 py-1 rounded-full">
+                      Popular
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-semibold text-gray-900">{item.name}</h3>
+                    <p className="text-sm text-gray-600 mt-1 line-clamp-2">{item.description}</p>
+                    <div className="flex items-center justify-between mt-4">
+                      <span className="text-xl font-bold text-[#D4A847]">{item.price} lei</span>
+                      <Link 
+                        to="/meniu"
+                        className="text-sm text-[#D4A847] hover:underline"
+                      >
+                        Vezi detalii
+                      </Link>
+                    </div>
                   </div>
                 </div>
-                <div className="p-4">
-                  <h3 className="font-semibold text-gray-900">{item.name}</h3>
-                  <p className="text-sm text-gray-600 mt-1 line-clamp-2">{item.description}</p>
-                  <div className="flex items-center justify-between mt-4">
-                    <span className="text-xl font-bold text-[#D4A847]">{item.price} lei</span>
-                    <Link 
-                      to="/meniu"
-                      className="text-sm text-[#D4A847] hover:underline"
-                    >
-                      Vezi detalii
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
+            <div className="text-center mt-10">
+              <Link
+                to="/meniu"
+                className="inline-flex items-center gap-2 bg-[#D4A847] text-white px-8 py-3 rounded-full hover:bg-[#c49a3d] transition-colors"
+                data-testid="view-all-menu-btn"
+              >
+                <span className="font-medium">Vezi tot meniul</span>
+              </Link>
+            </div>
           </div>
-          <div className="text-center mt-10">
-            <Link
-              to="/meniu"
-              className="inline-flex items-center gap-2 bg-[#D4A847] text-white px-8 py-3 rounded-full hover:bg-[#c49a3d] transition-colors"
-            >
-              <span className="font-medium">Vezi tot meniul</span>
-            </Link>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Reviews Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <span className="text-[#D4A847] font-medium">Ce spun clienții</span>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mt-2" style={{ fontFamily: 'Playfair Display, serif' }}>
-              Recenzii
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {reviews.map((review) => (
-              <div key={review.id} className="p-6 bg-[#FFF8E7] rounded-2xl">
-                <div className="flex mb-4">
-                  {[...Array(review.rating)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 text-[#D4A847] fill-[#D4A847]" />
-                  ))}
+      {reviews.length > 0 && (
+        <section className="py-16 bg-white" data-testid="reviews-section">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <span className="text-[#D4A847] font-medium">Ce spun clienții</span>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mt-2" style={{ fontFamily: 'Playfair Display, serif' }}>
+                Recenzii
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {reviews.map((review) => (
+                <div key={review.id} className="p-6 bg-[#FFF8E7] rounded-2xl" data-testid={`review-${review.id}`}>
+                  <div className="flex mb-4">
+                    {[...Array(review.rating)].map((_, i) => (
+                      <Star key={i} className="w-5 h-5 text-[#D4A847] fill-[#D4A847]" />
+                    ))}
+                  </div>
+                  <p className="text-gray-700 mb-4">"{review.text}"</p>
+                  <p className="font-semibold text-gray-900">— {review.name}</p>
                 </div>
-                <p className="text-gray-700 mb-4">"{review.text}"</p>
-                <p className="font-semibold text-gray-900">— {review.name}</p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Contact CTA Section */}
-      <section className="py-16 bg-gray-900 text-white">
+      <section className="py-16 bg-gray-900 text-white" data-testid="contact-cta-section">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div>
@@ -219,22 +282,23 @@ const Home = () => {
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
                   <MapPin className="w-6 h-6 text-[#D4A847]" />
-                  <span>{restaurantInfo.address}</span>
+                  <span>{info.address}</span>
                 </div>
                 <div className="flex items-center gap-4">
                   <Phone className="w-6 h-6 text-[#D4A847]" />
-                  <span>{restaurantInfo.phone}</span>
+                  <span>{info.phone}</span>
                 </div>
                 <div className="flex items-center gap-4">
                   <Clock className="w-6 h-6 text-[#D4A847]" />
-                  <span>Luni - Vineri: {restaurantInfo.schedule.weekdays}</span>
+                  <span>Luni - Vineri: {info.schedule?.weekdays}</span>
                 </div>
               </div>
             </div>
             <div className="flex flex-col sm:flex-row gap-4">
               <a
-                href={`tel:${restaurantInfo.phone.replace(/\s/g, '')}`}
+                href={`tel:${info.phone?.replace(/\s/g, '')}`}
                 className="flex items-center justify-center gap-2 bg-[#D4A847] text-white px-8 py-4 rounded-full hover:bg-[#c49a3d] transition-colors text-lg font-medium"
+                data-testid="footer-call-btn"
               >
                 <Phone className="w-5 h-5" />
                 <span>Sună pentru comandă</span>
@@ -242,6 +306,7 @@ const Home = () => {
               <Link
                 to="/contact"
                 className="flex items-center justify-center gap-2 border-2 border-white text-white px-8 py-4 rounded-full hover:bg-white hover:text-gray-900 transition-colors text-lg font-medium"
+                data-testid="footer-contact-btn"
               >
                 <span>Contact</span>
               </Link>
