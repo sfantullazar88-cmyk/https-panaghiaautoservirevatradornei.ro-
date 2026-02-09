@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="6" skipped="0" tests="22" time="5.499" timestamp="2026-02-09T20:26:38.464469+00:00" hostname="agent-env-5f803546-823d-4e00-9e11-1e6ec387b661"><testcase classname="backend.tests.test_admin_auth_api.TestAuthLogin" name="test_login_success" time="0.358" /><testcase classname="backend.tests.test_admin_auth_api.TestAuthLogin" name="test_login_invalid_password" time="0.262" /><testcase classname="backend.tests.test_admin_auth_api.TestAuthLogin" name="test_login_invalid_email" time="0.042" /><testcase classname="backend.tests.test_admin_auth_api.TestAuthMe" name="test_get_current_user" time="0.299" /><testcase classname="backend.tests.test_admin_auth_api.TestAuthMe" name="test_get_current_user_no_token" time="0.039" /><testcase classname="backend.tests.test_admin_auth_api.TestAuthMe" name="test_get_current_user_invalid_token" time="0.041" /><testcase classname="backend.tests.test_admin_auth_api.TestAdminDashboard" name="test_get_dashboard_stats" time="0.347" /><testcase classname="backend.tests.test_admin_auth_api.TestAdminDashboard" name="test_dashboard_requires_auth" time="0.042" /><testcase classname="backend.tests.test_admin_auth_api.TestAdminOrders" name="test_get_admin_orders" time="0.308" /><testcase classname="backend.tests.test_admin_auth_api.TestAdminOrders" name="test_get_orders_with_status_filter" time="0.302" /><testcase classname="backend.tests.test_admin_auth_api.TestAdminOrders" name="test_update_order_status" time="0.354" /><testcase classname="backend.tests.test_admin_auth_api.TestAdminOrders" name="test_update_order_invalid_status" time="0.346" /><testcase classname="backend.tests.test_admin_auth_api.TestAdminMenuItems" name="test_create_menu_item" time="0.303"><failure message="assert 520 == 200&#10; +  where 520 = &lt;Response [520]&gt;.status_code">backend/tests/test_admin_auth_api.py:276: in test_create_menu_item
+    assert response.status_code == 200
+E   assert 520 == 200
+E    +  where 520 = &lt;Response [520]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_admin_auth_api.TestAdminMenuItems" name="test_update_menu_item" time="0.296"><failure message="requests.exceptions.JSONDecodeError: Expecting value: line 1 column 1 (char 0)">/root/.venv/lib/python3.11/site-packages/requests/models.py:976: in json
+    return complexjson.loads(self.text, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/json/decoder.py:337: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/json/decoder.py:355: in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+E   json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+During handling of the above exception, another exception occurred:
+backend/tests/test_admin_auth_api.py:305: in test_update_menu_item
+    item_id = create_response.json()["id"]
+              ^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/models.py:980: in json
+    raise RequestsJSONDecodeError(e.msg, e.doc, e.pos)
+E   requests.exceptions.JSONDecodeError: Expecting value: line 1 column 1 (char 0)</failure></testcase><testcase classname="backend.tests.test_admin_auth_api.TestAdminMenuItems" name="test_delete_menu_item" time="0.300"><failure message="requests.exceptions.JSONDecodeError: Expecting value: line 1 column 1 (char 0)">/root/.venv/lib/python3.11/site-packages/requests/models.py:976: in json
+    return complexjson.loads(self.text, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/json/decoder.py:337: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/json/decoder.py:355: in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+E   json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+During handling of the above exception, another exception occurred:
+backend/tests/test_admin_auth_api.py:344: in test_delete_menu_item
+    item_id = create_response.json()["id"]
+              ^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/models.py:980: in json
+    raise RequestsJSONDecodeError(e.msg, e.doc, e.pos)
+E   requests.exceptions.JSONDecodeError: Expecting value: line 1 column 1 (char 0)</failure></testcase><testcase classname="backend.tests.test_admin_auth_api.TestAdminCategories" name="test_create_category" time="0.295"><failure message="assert 520 == 200&#10; +  where 520 = &lt;Response [520]&gt;.status_code">backend/tests/test_admin_auth_api.py:388: in test_create_category
+    assert response.status_code == 200
+E   assert 520 == 200
+E    +  where 520 = &lt;Response [520]&gt;.status_code</failure></testcase><testcase classname="backend.tests.test_admin_auth_api.TestAdminCategories" name="test_update_category" time="0.299"><failure message="requests.exceptions.JSONDecodeError: Expecting value: line 1 column 1 (char 0)">/root/.venv/lib/python3.11/site-packages/requests/models.py:976: in json
+    return complexjson.loads(self.text, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/json/decoder.py:337: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/json/decoder.py:355: in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+E   json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+During handling of the above exception, another exception occurred:
+backend/tests/test_admin_auth_api.py:411: in test_update_category
+    category_id = create_response.json()["id"]
+                  ^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/models.py:980: in json
+    raise RequestsJSONDecodeError(e.msg, e.doc, e.pos)
+E   requests.exceptions.JSONDecodeError: Expecting value: line 1 column 1 (char 0)</failure></testcase><testcase classname="backend.tests.test_admin_auth_api.TestAdminCategories" name="test_delete_category" time="0.298"><failure message="requests.exceptions.JSONDecodeError: Expecting value: line 1 column 1 (char 0)">/root/.venv/lib/python3.11/site-packages/requests/models.py:976: in json
+    return complexjson.loads(self.text, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/json/decoder.py:337: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.11/json/decoder.py:355: in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+E   json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+During handling of the above exception, another exception occurred:
+backend/tests/test_admin_auth_api.py:441: in test_delete_category
+    category_id = create_response.json()["id"]
+                  ^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/models.py:980: in json
+    raise RequestsJSONDecodeError(e.msg, e.doc, e.pos)
+E   requests.exceptions.JSONDecodeError: Expecting value: line 1 column 1 (char 0)</failure></testcase><testcase classname="backend.tests.test_admin_auth_api.TestTokenRefresh" name="test_refresh_token" time="0.296" /><testcase classname="backend.tests.test_admin_auth_api.TestTokenRefresh" name="test_refresh_invalid_token" time="0.047" /><testcase classname="backend.tests.test_admin_auth_api.TestAdminReviews" name="test_get_all_reviews" time="0.325" /><testcase classname="backend.tests.test_admin_auth_api.TestRateLimiting" name="test_rate_limiting_on_failed_logins" time="0.108" /></testsuite></testsuites>
