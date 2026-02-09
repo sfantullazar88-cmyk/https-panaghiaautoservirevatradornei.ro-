@@ -10,6 +10,13 @@ import Team from "./pages/Team";
 import Contact from "./pages/Contact";
 import Order from "./pages/Order";
 
+// Legal pages imports
+import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
+import TermsConditions from "./pages/legal/TermsConditions";
+import CookiePolicy from "./pages/legal/CookiePolicy";
+import RefundPolicy from "./pages/legal/RefundPolicy";
+import GDPRConsent from "./pages/legal/GDPRConsent";
+
 // Admin imports
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import AdminLogin from "./pages/admin/AdminLogin";
