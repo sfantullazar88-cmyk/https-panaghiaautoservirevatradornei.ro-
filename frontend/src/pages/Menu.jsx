@@ -1,23 +1,52 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Search, Filter, Plus, Star } from 'lucide-react';
-import { menuItems, menuCategories } from '../data/mock';
+import React, { useState, useEffect } from 'react';
+import { Search, Plus, Star } from 'lucide-react';
+import { menuApi } from '../services/api';
 
 const Menu = ({ onAddToCart }) => {
+  const [categories, setCategories] = useState([]);
+  const [menuItems, setMenuItems] = useState([]);
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [categoriesRes, itemsRes] = await Promise.all([
+          menuApi.getCategories(),
+          menuApi.getItems()
+        ]);
+        setCategories(categoriesRes);
+        setMenuItems(itemsRes);
+      } catch (error) {
+        console.error('Error fetching menu data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const filteredItems = menuItems.filter(item => {
-    const matchesCategory = activeCategory === 'all' || item.category === activeCategory;
+    const matchesCategory = activeCategory === 'all' || item.category_id === activeCategory;
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           item.description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 pt-24 flex items-center justify-center" data-testid="menu-loading">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#D4A847]"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 pt-24">
+    <div className="min-h-screen bg-gray-50 pt-24" data-testid="menu-page">
       {/* Hero Section */}
-      <section className="bg-[#D4A847] py-16">
+      <section className="bg-[#D4A847] py-16" data-testid="menu-hero">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
             Meniul Nostru
@@ -39,12 +68,13 @@ const Menu = ({ onAddToCart }) => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-12 pr-4 py-3 rounded-full border border-gray-200 focus:outline-none focus:border-[#D4A847] focus:ring-2 focus:ring-[#D4A847]/20 transition-all"
+              data-testid="menu-search-input"
             />
           </div>
         </div>
 
         {/* Categories */}
-        <div className="flex flex-wrap gap-3 mb-8">
+        <div className="flex flex-wrap gap-3 mb-8" data-testid="menu-categories">
           <button
             onClick={() => setActiveCategory('all')}
             className={`px-5 py-2 rounded-full font-medium transition-all ${
@@ -52,10 +82,11 @@ const Menu = ({ onAddToCart }) => {
                 ? 'bg-[#D4A847] text-white'
                 : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
             }`}
+            data-testid="category-all-btn"
           >
             Toate
           </button>
-          {menuCategories.map((category) => (
+          {categories.map((category) => (
             <button
               key={category.id}
               onClick={() => setActiveCategory(category.id)}
@@ -64,6 +95,7 @@ const Menu = ({ onAddToCart }) => {
                   ? 'bg-[#D4A847] text-white'
                   : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
               }`}
+              data-testid={`category-${category.id}-btn`}
             >
               {category.name}
             </button>
@@ -71,11 +103,12 @@ const Menu = ({ onAddToCart }) => {
         </div>
 
         {/* Menu Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" data-testid="menu-items-grid">
           {filteredItems.map((item) => (
             <div 
               key={item.id} 
               className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all hover:-translate-y-1 group"
+              data-testid={`menu-item-${item.id}`}
             >
               <div className="relative h-48 overflow-hidden">
                 <img 
@@ -83,7 +116,7 @@ const Menu = ({ onAddToCart }) => {
                   alt={item.name}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />
-                {item.isPopular && (
+                {item.is_popular && (
                   <div className="absolute top-3 left-3 bg-[#D4A847] text-white text-xs px-3 py-1 rounded-full flex items-center gap-1">
                     <Star className="w-3 h-3 fill-white" />
                     Popular
@@ -102,6 +135,7 @@ const Menu = ({ onAddToCart }) => {
                   <button 
                     onClick={() => onAddToCart && onAddToCart(item)}
                     className="w-10 h-10 bg-[#D4A847] text-white rounded-full flex items-center justify-center hover:bg-[#c49a3d] transition-colors"
+                    data-testid={`add-to-cart-${item.id}`}
                   >
                     <Plus className="w-5 h-5" />
                   </button>
@@ -112,11 +146,12 @@ const Menu = ({ onAddToCart }) => {
         </div>
 
         {filteredItems.length === 0 && (
-          <div className="text-center py-16">
+          <div className="text-center py-16" data-testid="no-items-message">
             <p className="text-gray-500 text-lg">Nu am găsit preparate care să corespundă căutării tale.</p>
             <button
               onClick={() => { setActiveCategory('all'); setSearchQuery(''); }}
               className="mt-4 text-[#D4A847] hover:underline"
+              data-testid="reset-filters-btn"
             >
               Resetează filtrele
             </button>
