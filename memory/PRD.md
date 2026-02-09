@@ -1,142 +1,166 @@
 # Panaghia - Autoservire Vatra Dornei
 
 ## Problemă Originală
-Utilizatorul a pierdut un proiect anterior "food-delivery-app-160" și a cerut recrearea acestuia ca o aplicație de food delivery pentru restaurantul "Panaghia - Autoservire Vatra Dornei".
+Aplicație de food delivery pentru restaurantul "Panaghia - Autoservire Vatra Dornei" din România.
 
-## Cerințe Core
-1. **Website pentru restaurant** cu meniu, informații și funcționalitate de comandă
-2. **Sistem de comenzi online** cu opțiuni de ridicare și livrare
-3. **Meniu dinamic** cu categorii și produse gestionate din baza de date
-4. **Design tradițional românesc** cu elemente moderne
+## Versiunea Curentă: 2.0.0
+
+## Ce a fost implementat
+
+### Partea I - Frontend & Backend de bază (Completă ✅)
+- ✅ Website complet cu pagini: Home, Meniu, Echipa, Contact, Comandă
+- ✅ Backend FastAPI cu MongoDB
+- ✅ API-uri pentru meniu, comenzi, recenzii, info restaurant
+- ✅ Coș de cumpărături funcțional
+- ✅ Procesare comenzi (pickup/delivery)
+- ✅ Imagine personalizată din restaurant pe pagina principală
+
+### Partea II - Autentificare, Admin & Plăți (Completă ✅)
+- ✅ **Sistem de autentificare JWT**
+  - Login cu email și parolă
+  - Token refresh automat
+  - Parole criptate cu bcrypt
+  - Rate limiting (5 încercări, blocaj 15 minute)
+  - Recuperare parolă cu token
+- ✅ **Panou de administrare complet**
+  - Dashboard cu statistici (comenzi, venituri, produse populare)
+  - Gestionare comenzi (vizualizare, filtrare, actualizare status)
+  - Gestionare meniu (categorii, produse, meniu zilnic)
+  - Gestionare livrări cu hartă (pregătit pentru Google Maps)
+  - Gestionare recenzii (aprobare/respingere)
+  - Setări cont și schimbare parolă
+- ✅ **Integrare Stripe**
+  - Checkout securizat
+  - Plăți cu card online
+  - Webhook pentru confirmare plată
+
+## Credențiale Admin
+- **Email**: panaghia8688@yahoo.com
+- **Parola inițială**: Panaghia2026!
+- **URL Admin**: /admin/login
+
+⚠️ **IMPORTANT**: Schimbați parola după prima autentificare din Setări > Securitate!
 
 ## Stack Tehnic
 - **Frontend**: React 18, React Router, TailwindCSS, Lucide Icons
-- **Backend**: FastAPI (Python), Motor (async MongoDB driver)
+- **Backend**: FastAPI (Python), Motor (async MongoDB), Pydantic
 - **Database**: MongoDB
-- **Deployment**: Preview pe Emergent Platform
+- **Autentificare**: JWT + bcrypt
+- **Plăți**: Stripe (emergentintegrations)
+- **Deployment**: Emergent Platform
 
 ## Structura Proiectului
 ```
 /app
 ├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── layout/
-│   │   │   │   ├── Header.jsx
-│   │   │   │   └── Footer.jsx
-│   │   │   ├── CookieConsent.jsx
-│   │   │   └── ui/  (shadcn components)
-│   │   ├── data/
-│   │   │   └── mock.js  (fallback data)
-│   │   ├── pages/
-│   │   │   ├── Home.jsx
-│   │   │   ├── Menu.jsx
-│   │   │   ├── Order.jsx
-│   │   │   ├── Team.jsx
-│   │   │   └── Contact.jsx
-│   │   ├── services/
-│   │   │   └── api.js
-│   │   ├── App.js
-│   │   └── index.css
-│   └── package.json
+│   └── src/
+│       ├── components/
+│       │   ├── layout/ (Header, Footer)
+│       │   ├── ui/ (shadcn components)
+│       │   └── CookieConsent.jsx
+│       ├── context/
+│       │   └── AuthContext.jsx
+│       ├── pages/
+│       │   ├── Home.jsx, Menu.jsx, Team.jsx, Contact.jsx, Order.jsx
+│       │   └── admin/
+│       │       ├── AdminLogin.jsx
+│       │       ├── AdminLayout.jsx
+│       │       ├── AdminDashboard.jsx
+│       │       ├── AdminOrders.jsx
+│       │       ├── AdminMenu.jsx
+│       │       ├── AdminDelivery.jsx
+│       │       ├── AdminReviews.jsx
+│       │       └── AdminSettings.jsx
+│       ├── services/
+│       │   ├── api.js
+│       │   └── adminApi.js
+│       └── App.js
 ├── backend/
 │   ├── routes/
+│   │   ├── auth.py
+│   │   ├── admin.py
 │   │   ├── menu.py
 │   │   ├── orders.py
-│   │   └── restaurant.py
+│   │   ├── restaurant.py
+│   │   └── payments.py
 │   ├── models.py
-│   ├── server.py
-│   └── requirements.txt
+│   └── server.py
 └── memory/
     └── PRD.md
 ```
 
-## Ce a fost implementat
+## API Endpoints
 
-### Sesiunea curentă (Februarie 2026)
-- ✅ **Actualizare imagine hero** - Pagina principală folosește acum imaginea din restaurant
-- ✅ **Backend FastAPI complet**:
-  - GET /api/health - Health check
-  - GET /api/restaurant/info - Informații restaurant
-  - PUT /api/restaurant/info - Update informații
-  - GET /api/restaurant/reviews - Recenzii
-  - POST /api/restaurant/reviews - Adăugare recenzie
-  - GET /api/menu/categories - Categorii meniu
-  - POST /api/menu/categories - Adăugare categorie
-  - GET /api/menu/items - Produse meniu (cu filtrare)
-  - POST /api/menu/items - Adăugare produs
-  - GET /api/menu/daily - Meniu zilnic
-  - POST /api/orders/ - Creare comandă
-  - GET /api/orders/ - Lista comenzi
-  - PATCH /api/orders/{id}/status - Update status comandă
-- ✅ **Schema bază de date**:
-  - menu_categories - categorii produse
-  - menu_items - produse cu preț, descriere, imagine
-  - daily_menu - meniu zilnic pentru fiecare zi
-  - orders - comenzi cu items și info client
-  - reviews - recenzii clienți
-  - restaurant_info - informații restaurant
-- ✅ **Integrare Frontend-Backend**:
-  - Home.jsx - încarcă date din API
-  - Menu.jsx - afișează categorii și produse din DB
-  - Order.jsx - trimite comenzi la backend
-  - Header/Footer - date dinamice din API
-- ✅ **Coș de cumpărături funcțional**:
-  - Adăugare/eliminare produse
-  - Modificare cantitate
-  - Calcul total automat
-  - Opțiune pickup/delivery
-- ✅ **Procesare comenzi**:
-  - Formular client cu validare
-  - Selecție metodă plată (cash/card)
-  - Confirmare cu număr comandă
-
-### Sesiunea anterioară
-- ✅ Recrearea frontend-ului complet (Home, Menu, Team, Contact, Order)
-- ✅ Componente Header, Footer, CookieConsent
-- ✅ Styling cu TailwindCSS
-- ✅ Fonturi Playfair Display
-
-## Backlog
-
-### P0 (Urgent)
-- Niciuna - toate funcționalitățile de bază sunt implementate
-
-### P1 (Următoarele sarcini)
-- [ ] Panou de administrare pentru gestionarea meniului
-- [ ] Autentificare pentru admin
-- [ ] Notificări email la comandă nouă
-- [ ] Integrare plăți online (Stripe/PayPal)
-
-### P2 (Viitoare)
-- [ ] Sistem de livrare cu tracking
-- [ ] Program de fidelitate
-- [ ] Rezervări online
-- [ ] Integrare Google Maps pentru livrare
-- [ ] PWA pentru acces offline
-
-## Endpoint-uri API
-
+### Public
 | Endpoint | Method | Descriere |
 |----------|--------|-----------|
 | /api/health | GET | Health check |
 | /api/restaurant/info | GET | Info restaurant |
 | /api/restaurant/reviews | GET | Lista recenzii |
 | /api/menu/categories | GET | Categorii meniu |
-| /api/menu/items | GET | Produse (query: category_id, popular_only) |
+| /api/menu/items | GET | Produse meniu |
 | /api/menu/daily | GET | Meniu zilnic |
 | /api/orders/ | POST | Creare comandă |
-| /api/orders/ | GET | Lista comenzi |
 
-## Note Tehnice
-- Backend seed-uiește automat baza de date la startup dacă este goală
-- Frontend are fallback pe datele mock dacă API-ul nu răspunde
-- Toate datetime-urile sunt stocate în ISO format în MongoDB
-- ObjectId din MongoDB este exclus din răspunsuri pentru a evita erori de serializare
+### Autentificare
+| Endpoint | Method | Descriere |
+|----------|--------|-----------|
+| /api/auth/login | POST | Login admin |
+| /api/auth/refresh | POST | Refresh token |
+| /api/auth/me | GET | User curent |
+| /api/auth/change-password | POST | Schimbare parolă |
+| /api/auth/password-reset/request | POST | Cerere resetare parolă |
+| /api/auth/password-reset/confirm | POST | Confirmare resetare |
+
+### Admin (necesită autentificare)
+| Endpoint | Method | Descriere |
+|----------|--------|-----------|
+| /api/admin/dashboard | GET | Statistici dashboard |
+| /api/admin/orders | GET | Lista comenzi |
+| /api/admin/orders/{id}/status | PATCH | Update status comandă |
+| /api/admin/menu/items | POST | Creare produs |
+| /api/admin/menu/items/{id} | PUT/DELETE | Update/Delete produs |
+| /api/admin/menu/categories | POST | Creare categorie |
+| /api/admin/menu/categories/{id} | PUT/DELETE | Update/Delete categorie |
+| /api/admin/reviews | GET | Lista recenzii |
+| /api/admin/reviews/{id}/approve | PATCH | Aprobare recenzie |
+
+### Plăți
+| Endpoint | Method | Descriere |
+|----------|--------|-----------|
+| /api/payments/checkout | POST | Creare sesiune Stripe |
+| /api/payments/status/{session_id} | GET | Status plată |
+
+## Securitate
+- ✅ Conexiune SSL/HTTPS
+- ✅ Parole criptate cu bcrypt
+- ✅ JWT tokens cu expirare
+- ✅ Rate limiting pe login
+- ✅ Validare input cu Pydantic
+- ✅ CORS configurat
+
+## Backlog
+
+### P1 (Următoarele sarcini)
+- [ ] Integrare Google Maps API pentru vizualizare livrări pe hartă
+- [ ] Notificări email la comandă nouă (SendGrid/Resend)
+- [ ] Export rapoarte vânzări (PDF/Excel)
+
+### P2 (Viitoare)
+- [ ] Sistem tracking livrări în timp real
+- [ ] Program de fidelitate clienți
+- [ ] Rezervări online
+- [ ] PWA pentru acces offline
+- [ ] Aplicație mobilă (React Native)
 
 ## URL-uri
 - **Preview**: https://food-delivery-240.preview.emergentagent.com
 - **API**: https://food-delivery-240.preview.emergentagent.com/api
+- **Admin Panel**: https://food-delivery-240.preview.emergentagent.com/admin
 
 ## Status Proiect
-**FUNCTIONAL** - Aplicația este complet funcțională cu frontend conectat la backend.
+**COMPLET FUNCȚIONAL** - Frontend + Backend + Autentificare + Admin Panel + Plăți Stripe
+
+## Test Reports
+- /app/test_reports/iteration_1.json - Teste Partea I
+- /app/test_reports/iteration_2.json - Teste Partea II (100% passed)
