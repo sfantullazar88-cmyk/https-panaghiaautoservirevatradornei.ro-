@@ -45,11 +45,12 @@ Aplicație de food delivery pentru restaurantul "Panaghia - Autoservire Vatra Do
   - Email-uri HTML formatate pentru notificări comenzi
   - Funcționează după verificarea domeniului în Resend
   
-- ⚠️ **Zoho CRM Integration** - NECESITĂ COD NOU
+- ✅ **Zoho CRM Integration** - FUNCȚIONAL (10 Feb 2026)
   - Infrastructura completă (serviciu, rute, sincronizare automată)
-  - Sincronizare automată clienți și comenzi la creare
+  - Sincronizare automată clienți (Contacts) la creare comandă
+  - Sincronizare automată comenzi (Deals) cu detalii complete
   - Actualizare status deal la schimbarea statusului comenzii
-  - **BLOCAT**: Codul de autorizare a expirat - utilizatorul trebuie să genereze unul nou
+  - Token refresh automat când expiră
 
 ## Credențiale Admin
 - **Email**: panaghia8688@yahoo.com
