@@ -3,7 +3,7 @@
 ## Problemă Originală
 Aplicație de food delivery pentru restaurantul "Panaghia - Autoservire Vatra Dornei" din România.
 
-## Versiunea Curentă: 2.0.0
+## Versiunea Curentă: 3.0.0
 
 ## Ce a fost implementat
 
@@ -34,6 +34,23 @@ Aplicație de food delivery pentru restaurantul "Panaghia - Autoservire Vatra Do
   - Plăți cu card online
   - Webhook pentru confirmare plată
 
+### Partea III - Integrări Third-Party (10 Feb 2026)
+- ✅ **Stripe Payment Integration** - FUNCȚIONAL
+  - Cheile sunt în `.env`
+  - Endpoint `/api/payments/checkout` generează URL-uri de plată valide
+  - Webhook pentru confirmarea plăților este configurat
+  
+- ✅ **Resend Email Integration** - CONFIGURAT
+  - Serviciul `email_service.py` implementat
+  - Email-uri HTML formatate pentru notificări comenzi
+  - Funcționează după verificarea domeniului în Resend
+  
+- ⚠️ **Zoho CRM Integration** - NECESITĂ COD NOU
+  - Infrastructura completă (serviciu, rute, sincronizare automată)
+  - Sincronizare automată clienți și comenzi la creare
+  - Actualizare status deal la schimbarea statusului comenzii
+  - **BLOCAT**: Codul de autorizare a expirat - utilizatorul trebuie să genereze unul nou
+
 ## Credențiale Admin
 - **Email**: panaghia8688@yahoo.com
 - **Parola inițială**: Panaghia2026!
@@ -46,7 +63,9 @@ Aplicație de food delivery pentru restaurantul "Panaghia - Autoservire Vatra Do
 - **Backend**: FastAPI (Python), Motor (async MongoDB), Pydantic
 - **Database**: MongoDB
 - **Autentificare**: JWT + bcrypt
-- **Plăți**: Stripe (emergentintegrations)
+- **Plăți**: Stripe
+- **Email**: Resend
+- **CRM**: Zoho CRM
 - **Deployment**: Emergent Platform
 
 ## Structura Proiectului
@@ -62,27 +81,23 @@ Aplicație de food delivery pentru restaurantul "Panaghia - Autoservire Vatra Do
 │       │   └── AuthContext.jsx
 │       ├── pages/
 │       │   ├── Home.jsx, Menu.jsx, Team.jsx, Contact.jsx, Order.jsx
-│       │   └── admin/
-│       │       ├── AdminLogin.jsx
-│       │       ├── AdminLayout.jsx
-│       │       ├── AdminDashboard.jsx
-│       │       ├── AdminOrders.jsx
-│       │       ├── AdminMenu.jsx
-│       │       ├── AdminDelivery.jsx
-│       │       ├── AdminReviews.jsx
-│       │       └── AdminSettings.jsx
+│       │   ├── admin/
+│       │   │   ├── AdminLogin.jsx, AdminLayout.jsx, AdminDashboard.jsx
+│       │   │   ├── AdminOrders.jsx, AdminMenu.jsx, AdminDelivery.jsx
+│       │   │   ├── AdminReviews.jsx, AdminSettings.jsx
+│       │   └── legal/
+│       │       ├── PrivacyPolicy.jsx, TermsConditions.jsx, ...
 │       ├── services/
 │       │   ├── api.js
 │       │   └── adminApi.js
 │       └── App.js
 ├── backend/
 │   ├── routes/
-│   │   ├── auth.py
-│   │   ├── admin.py
-│   │   ├── menu.py
-│   │   ├── orders.py
-│   │   ├── restaurant.py
-│   │   └── payments.py
+│   │   ├── auth.py, admin.py, menu.py, orders.py
+│   │   ├── restaurant.py, payments.py, zoho.py
+│   ├── services/
+│   │   ├── email_service.py
+│   │   └── zoho_service.py
 │   ├── models.py
 │   └── server.py
 └── memory/
@@ -109,8 +124,6 @@ Aplicație de food delivery pentru restaurantul "Panaghia - Autoservire Vatra Do
 | /api/auth/refresh | POST | Refresh token |
 | /api/auth/me | GET | User curent |
 | /api/auth/change-password | POST | Schimbare parolă |
-| /api/auth/password-reset/request | POST | Cerere resetare parolă |
-| /api/auth/password-reset/confirm | POST | Confirmare resetare |
 
 ### Admin (necesită autentificare)
 | Endpoint | Method | Descriere |
@@ -119,17 +132,19 @@ Aplicație de food delivery pentru restaurantul "Panaghia - Autoservire Vatra Do
 | /api/admin/orders | GET | Lista comenzi |
 | /api/admin/orders/{id}/status | PATCH | Update status comandă |
 | /api/admin/menu/items | POST | Creare produs |
-| /api/admin/menu/items/{id} | PUT/DELETE | Update/Delete produs |
 | /api/admin/menu/categories | POST | Creare categorie |
-| /api/admin/menu/categories/{id} | PUT/DELETE | Update/Delete categorie |
-| /api/admin/reviews | GET | Lista recenzii |
-| /api/admin/reviews/{id}/approve | PATCH | Aprobare recenzie |
 
 ### Plăți
 | Endpoint | Method | Descriere |
 |----------|--------|-----------|
 | /api/payments/checkout | POST | Creare sesiune Stripe |
 | /api/payments/status/{session_id} | GET | Status plată |
+
+### Zoho CRM
+| Endpoint | Method | Descriere |
+|----------|--------|-----------|
+| /api/zoho/status | GET | Status integrare Zoho |
+| /api/zoho/initialize | POST | Inițializare OAuth |
 
 ## Securitate
 - ✅ Conexiune SSL/HTTPS
@@ -139,11 +154,21 @@ Aplicație de food delivery pentru restaurantul "Panaghia - Autoservire Vatra Do
 - ✅ Validare input cu Pydantic
 - ✅ CORS configurat
 
+## Status Integrări
+| Integrare | Status | Note |
+|-----------|--------|------|
+| Stripe | ✅ FUNCȚIONAL | Checkout URLs generate corect |
+| Resend Email | ⚠️ CONFIGURAT | Funcționează după verificare domeniu |
+| Zoho CRM | ⚠️ TOKEN EXPIRAT | Necesită cod de autorizare nou |
+
 ## Backlog
+
+### P0 (Urgent)
+- [ ] Generare cod nou Zoho CRM pentru finalizare integrare
 
 ### P1 (Următoarele sarcini)
 - [ ] Integrare Google Maps API pentru vizualizare livrări pe hartă
-- [ ] Notificări email la comandă nouă (SendGrid/Resend)
+- [ ] Verificare domeniu în Resend pentru email notifications
 - [ ] Export rapoarte vânzări (PDF/Excel)
 
 ### P2 (Viitoare)
@@ -160,7 +185,9 @@ Aplicație de food delivery pentru restaurantul "Panaghia - Autoservire Vatra Do
 
 ## Status Proiect
 **COMPLET FUNCȚIONAL** - Frontend + Backend + Autentificare + Admin Panel + Plăți Stripe
+**PARȚIAL** - Email (domeniu), Zoho CRM (token)
 
 ## Test Reports
 - /app/test_reports/iteration_1.json - Teste Partea I
-- /app/test_reports/iteration_2.json - Teste Partea II (100% passed)
+- /app/test_reports/iteration_2.json - Teste Partea II
+- /app/test_reports/iteration_3.json - Teste Partea III (100% passed)
