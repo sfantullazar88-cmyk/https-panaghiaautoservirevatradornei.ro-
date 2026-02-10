@@ -164,9 +164,6 @@ Aplicație de food delivery pentru restaurantul "Panaghia - Autoservire Vatra Do
 
 ## Backlog
 
-### P0 (Urgent)
-- [ ] Generare cod nou Zoho CRM pentru finalizare integrare
-
 ### P1 (Următoarele sarcini)
 - [ ] Integrare Google Maps API pentru vizualizare livrări pe hartă
 - [ ] Verificare domeniu în Resend pentru email notifications
