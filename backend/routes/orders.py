@@ -93,6 +93,23 @@ async def create_order(order_data: dict):
         import logging
         logging.error(f"Failed to queue email notification: {e}")
     
+    # Sync to Zoho CRM (async, don't block response)
+    try:
+        from services.zoho_service import sync_customer_to_zoho, sync_order_to_zoho
+        import asyncio
+        
+        async def sync_to_zoho():
+            # First sync customer
+            customer_data = doc.get('customer', {})
+            contact_id = await sync_customer_to_zoho(customer_data)
+            # Then sync order with contact reference
+            await sync_order_to_zoho(doc, contact_id)
+        
+        asyncio.create_task(sync_to_zoho())
+    except Exception as e:
+        import logging
+        logging.error(f"Failed to queue Zoho CRM sync: {e}")
+    
     return doc
 
 
