@@ -182,8 +182,8 @@ Aplicație de food delivery pentru restaurantul "Panaghia - Autoservire Vatra Do
 - **Admin Panel**: https://quickbites-125.preview.emergentagent.com/admin
 
 ## Status Proiect
-**COMPLET FUNCȚIONAL** - Frontend + Backend + Autentificare + Admin Panel + Plăți Stripe
-**PARȚIAL** - Email (domeniu), Zoho CRM (token)
+**COMPLET FUNCȚIONAL** - Frontend + Backend + Autentificare + Admin Panel + Plăți Stripe + Zoho CRM
+**PARȚIAL** - Email (necesită verificare domeniu Resend)
 
 ## Test Reports
 - /app/test_reports/iteration_1.json - Teste Partea I
