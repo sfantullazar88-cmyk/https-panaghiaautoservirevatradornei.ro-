@@ -94,6 +94,10 @@ async def get_valid_access_token() -> Optional[str]:
     if isinstance(created_at, str):
         created_at = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
     
+    # Make created_at timezone-aware if it's naive
+    if created_at.tzinfo is None:
+        created_at = created_at.replace(tzinfo=timezone.utc)
+    
     expiry_time = created_at + timedelta(seconds=expires_in - 300)
     
     if datetime.now(timezone.utc) >= expiry_time:
