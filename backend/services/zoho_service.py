@@ -276,6 +276,14 @@ Observații: {customer.get('notes', '')}
                 if result.get("data"):
                     deal_id = result["data"][0].get("details", {}).get("id")
                     logger.info(f"Order synced to Zoho CRM as deal: {deal_id}")
+                    
+                    # Save deal_id to order in database
+                    if deal_id and db:
+                        await db.orders.update_one(
+                            {"id": order_data.get("id")},
+                            {"$set": {"zoho_deal_id": deal_id}}
+                        )
+                    
                     return deal_id
             else:
                 logger.error(f"Zoho CRM deal sync failed: {response.status_code} - {response.text}")
