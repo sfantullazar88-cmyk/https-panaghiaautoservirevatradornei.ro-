@@ -38,12 +38,14 @@ async def exchange_authorization_code(auth_code: str) -> dict:
     Exchange authorization code for access and refresh tokens.
     Should be called once during initial setup.
     """
+    config = get_zoho_config()
+    
     async with httpx.AsyncClient() as client:
         response = await client.post(
             f"{ZOHO_ACCOUNTS_URL}/oauth/v2/token",
             params={
-                "client_id": ZOHO_CLIENT_ID,
-                "client_secret": ZOHO_CLIENT_SECRET,
+                "client_id": config['client_id'],
+                "client_secret": config['client_secret'],
                 "grant_type": "authorization_code",
                 "code": auth_code,
                 "redirect_uri": "http://localhost:8000/api/zoho/callback",
