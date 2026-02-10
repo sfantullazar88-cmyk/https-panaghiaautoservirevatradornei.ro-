@@ -63,7 +63,7 @@ class MenuItemUpdate(BaseModel):
 # ============== ORDER MODELS ==============
 
 class OrderItem(BaseModel):
-    menu_item_id: str
+    menu_item_id: Optional[str] = None
     name: str
     price: float
     quantity: int
