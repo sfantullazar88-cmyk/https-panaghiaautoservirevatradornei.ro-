@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 # Resend configuration
 RESEND_API_KEY = os.environ.get('RESEND_API_KEY')
 ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'panaghia8688@yahoo.com')
-FROM_EMAIL = "onboarding@resend.dev"  # Use Resend default for testing
+FROM_EMAIL = "comenzi@panaghiaautoservirevatradornei.ro"  # Verified domain
 
 # Initialize Resend
 if RESEND_API_KEY:
