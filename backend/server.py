@@ -11,7 +11,8 @@ import uuid
 from datetime import datetime, timezone
 
 # Import routes
-from routes import menu, orders, restaurant, auth, admin, payments
+from routes import menu, orders, restaurant, auth, admin, payments, zoho
+from services import zoho_service
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -28,6 +29,8 @@ restaurant.set_db(db)
 auth.set_db(db)
 admin.set_db(db)
 payments.set_db(db)
+zoho.set_db(db)
+zoho_service.set_db(db)
 
 # Create the main app
 app = FastAPI(
@@ -101,6 +104,7 @@ api_router.include_router(restaurant.router)
 api_router.include_router(auth.router)
 api_router.include_router(admin.router)
 api_router.include_router(payments.router)
+api_router.include_router(zoho.router)
 
 # Include the router in the main app
 app.include_router(api_router)
