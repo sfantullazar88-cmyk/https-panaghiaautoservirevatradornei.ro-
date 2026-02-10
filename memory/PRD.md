@@ -159,7 +159,7 @@ Aplicație de food delivery pentru restaurantul "Panaghia - Autoservire Vatra Do
 |-----------|--------|------|
 | Stripe | ✅ FUNCȚIONAL | Checkout URLs generate corect |
 | Resend Email | ⚠️ CONFIGURAT | Funcționează după verificare domeniu |
-| Zoho CRM | ⚠️ TOKEN EXPIRAT | Necesită cod de autorizare nou |
+| Zoho CRM | ✅ FUNCȚIONAL | Contacte și dealuri se sincronizează automat |
 
 ## Backlog
 
