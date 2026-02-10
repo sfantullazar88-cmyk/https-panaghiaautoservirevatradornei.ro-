@@ -3,7 +3,9 @@ Email Notification Service using Resend
 Sends email notifications when new orders are placed
 """
 import os
+import asyncio
 import logging
+import resend
 from typing import Optional
 from datetime import datetime, timezone
 
@@ -12,7 +14,11 @@ logger = logging.getLogger(__name__)
 # Resend configuration
 RESEND_API_KEY = os.environ.get('RESEND_API_KEY')
 ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'panaghia8688@yahoo.com')
-FROM_EMAIL = "comenzi@panaghia.ro"  # Will use Resend default if not verified
+FROM_EMAIL = "onboarding@resend.dev"  # Use Resend default for testing
+
+# Initialize Resend
+if RESEND_API_KEY:
+    resend.api_key = RESEND_API_KEY
 
 
 async def send_new_order_notification(order: dict) -> bool:
@@ -30,19 +36,14 @@ async def send_new_order_notification(order: dict) -> bool:
         return False
     
     try:
-        from emergentintegrations.llm.resend import send_email, ResendConfig
-        
-        # Configure Resend
-        config = ResendConfig(api_key=RESEND_API_KEY)
-        
         # Format order items for email
         items_html = ""
         for item in order.get('items', []):
             items_html += f"""
             <tr>
-                <td style="padding: 8px; border-bottom: 1px solid #eee;">{item['name']}</td>
-                <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">{item['quantity']}</td>
-                <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">{item['price'] * item['quantity']} lei</td>
+                <td style="padding: 8px; border-bottom: 1px solid #eee;">{item.get('name', 'Produs')}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">{item.get('quantity', 1)}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">{item.get('price', 0) * item.get('quantity', 1)} lei</td>
             </tr>
             """
         
@@ -56,109 +57,95 @@ async def send_new_order_notification(order: dict) -> bool:
         <html>
         <head>
             <meta charset="utf-8">
-            <style>
-                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-                .header {{ background: #D4A847; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }}
-                .content {{ background: #f9f9f9; padding: 20px; border-radius: 0 0 8px 8px; }}
-                .order-number {{ font-size: 24px; font-weight: bold; color: #D4A847; }}
-                .info-box {{ background: white; padding: 15px; border-radius: 8px; margin: 15px 0; }}
-                .total {{ font-size: 20px; font-weight: bold; color: #D4A847; }}
-                table {{ width: 100%; border-collapse: collapse; }}
-                th {{ background: #f0f0f0; padding: 10px; text-align: left; }}
-            </style>
         </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h1>🍽️ Comandă Nouă!</h1>
-                    <p>Panaghia Autoservire</p>
-                </div>
-                <div class="content">
-                    <p style="text-align: center;">
-                        <span class="order-number">{order.get('order_number', 'N/A')}</span>
-                    </p>
-                    
-                    <div class="info-box">
-                        <h3>📋 Detalii Client</h3>
-                        <p><strong>Nume:</strong> {customer.get('name', 'N/A')}</p>
-                        <p><strong>Telefon:</strong> {customer.get('phone', 'N/A')}</p>
-                        {f"<p><strong>Email:</strong> {customer.get('email')}</p>" if customer.get('email') else ""}
-                        {f"<p><strong>Adresă:</strong> {customer.get('address')}</p>" if customer.get('address') else ""}
-                        {f"<p><strong>Observații:</strong> {customer.get('notes')}</p>" if customer.get('notes') else ""}
-                    </div>
-                    
-                    <div class="info-box">
-                        <h3>📦 Tip Comandă</h3>
-                        <p><strong>Metoda:</strong> {order_type}</p>
-                        <p><strong>Plată:</strong> {payment_method}</p>
-                    </div>
-                    
-                    <div class="info-box">
-                        <h3>🛒 Produse Comandate</h3>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Produs</th>
-                                    <th style="text-align: center;">Cantitate</th>
-                                    <th style="text-align: right;">Preț</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {items_html}
-                            </tbody>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto;">
+                <tr>
+                    <td style="background: #D4A847; color: white; padding: 20px; text-align: center;">
+                        <h1 style="margin: 0;">🍽️ Comandă Nouă!</h1>
+                        <p style="margin: 5px 0 0 0;">Panaghia Autoservire</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="background: #f9f9f9; padding: 20px;">
+                        <p style="text-align: center; font-size: 24px; font-weight: bold; color: #D4A847; margin: 0 0 20px 0;">
+                            {order.get('order_number', 'N/A')}
+                        </p>
+                        
+                        <table width="100%" style="background: white; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                            <tr>
+                                <td>
+                                    <h3 style="margin: 0 0 10px 0;">📋 Detalii Client</h3>
+                                    <p style="margin: 5px 0;"><strong>Nume:</strong> {customer.get('name', 'N/A')}</p>
+                                    <p style="margin: 5px 0;"><strong>Telefon:</strong> {customer.get('phone', 'N/A')}</p>
+                                    {f'<p style="margin: 5px 0;"><strong>Email:</strong> {customer.get("email")}</p>' if customer.get('email') else ''}
+                                    {f'<p style="margin: 5px 0;"><strong>Adresă:</strong> {customer.get("address")}</p>' if customer.get('address') else ''}
+                                    {f'<p style="margin: 5px 0;"><strong>Observații:</strong> {customer.get("notes")}</p>' if customer.get('notes') else ''}
+                                </td>
+                            </tr>
                         </table>
-                    </div>
-                    
-                    <div style="text-align: center; margin-top: 20px;">
-                        <p class="total">Total: {order.get('total', 0)} lei</p>
-                    </div>
-                    
-                    <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
-                    
-                    <p style="text-align: center; color: #666; font-size: 12px;">
-                        Acest email a fost generat automat de sistemul Panaghia.<br>
-                        {datetime.now(timezone.utc).strftime('%d.%m.%Y %H:%M')} UTC
-                    </p>
-                </div>
-            </div>
+                        
+                        <table width="100%" style="background: white; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                            <tr>
+                                <td>
+                                    <h3 style="margin: 0 0 10px 0;">📦 Tip Comandă</h3>
+                                    <p style="margin: 5px 0;"><strong>Metoda:</strong> {order_type}</p>
+                                    <p style="margin: 5px 0;"><strong>Plată:</strong> {payment_method}</p>
+                                </td>
+                            </tr>
+                        </table>
+                        
+                        <table width="100%" style="background: white; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                            <tr>
+                                <td>
+                                    <h3 style="margin: 0 0 10px 0;">🛒 Produse Comandate</h3>
+                                    <table width="100%" style="border-collapse: collapse;">
+                                        <thead>
+                                            <tr>
+                                                <th style="background: #f0f0f0; padding: 10px; text-align: left;">Produs</th>
+                                                <th style="background: #f0f0f0; padding: 10px; text-align: center;">Cant.</th>
+                                                <th style="background: #f0f0f0; padding: 10px; text-align: right;">Preț</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {items_html}
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                        
+                        <p style="text-align: center; font-size: 20px; font-weight: bold; color: #D4A847; margin: 20px 0;">
+                            Total: {order.get('total', 0)} lei
+                        </p>
+                        
+                        <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
+                        
+                        <p style="text-align: center; color: #666; font-size: 12px; margin: 0;">
+                            Acest email a fost generat automat de sistemul Panaghia.<br>
+                            {datetime.now(timezone.utc).strftime('%d.%m.%Y %H:%M')} UTC
+                        </p>
+                    </td>
+                </tr>
+            </table>
         </body>
         </html>
         """
         
-        # Plain text version
-        text_content = f"""
-        COMANDĂ NOUĂ - {order.get('order_number', 'N/A')}
+        # Prepare email params
+        params = {
+            "from": FROM_EMAIL,
+            "to": [ADMIN_EMAIL],
+            "subject": f"🍽️ Comandă Nouă #{order.get('order_number', 'N/A')} - {customer.get('name', 'Client')}",
+            "html": html_content
+        }
         
-        Client: {customer.get('name', 'N/A')}
-        Telefon: {customer.get('phone', 'N/A')}
-        Tip: {order_type}
-        Plată: {payment_method}
+        # Send email (run sync SDK in thread to keep FastAPI non-blocking)
+        email = await asyncio.to_thread(resend.Emails.send, params)
         
-        Produse:
-        {chr(10).join([f"- {item['name']} x{item['quantity']} = {item['price'] * item['quantity']} lei" for item in order.get('items', [])])}
-        
-        TOTAL: {order.get('total', 0)} lei
-        
-        {'Adresă: ' + customer.get('address', '') if customer.get('address') else ''}
-        {'Observații: ' + customer.get('notes', '') if customer.get('notes') else ''}
-        """
-        
-        # Send email
-        result = await send_email(
-            config=config,
-            to_email=ADMIN_EMAIL,
-            subject=f"🍽️ Comandă Nouă #{order.get('order_number', 'N/A')} - {customer.get('name', 'Client')}",
-            html_content=html_content,
-            text_content=text_content
-        )
-        
-        logger.info(f"Email notification sent for order {order.get('order_number')}")
+        logger.info(f"Email notification sent for order {order.get('order_number')}, email_id: {email.get('id')}")
         return True
         
-    except ImportError:
-        logger.warning("emergentintegrations not available - skipping email notification")
-        return False
     except Exception as e:
         logger.error(f"Failed to send email notification: {e}")
         return False
@@ -196,44 +183,42 @@ async def send_order_status_update(order: dict, new_status: str) -> bool:
         return False
     
     try:
-        from emergentintegrations.llm.resend import send_email, ResendConfig
-        
-        config = ResendConfig(api_key=RESEND_API_KEY)
-        
         html_content = f"""
         <!DOCTYPE html>
         <html>
         <head>
-            <style>
-                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-                .header {{ background: #D4A847; color: white; padding: 20px; text-align: center; border-radius: 8px; }}
-            </style>
+            <meta charset="utf-8">
         </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h2>Actualizare Comandă</h2>
-                    <p>{order.get('order_number', 'N/A')}</p>
-                </div>
-                <div style="padding: 20px; background: #f9f9f9; border-radius: 8px; margin-top: 20px;">
-                    <p>Dragă {order.get('customer', {}).get('name', 'Client')},</p>
-                    <p>{status_messages[new_status]}</p>
-                    <p>Dacă ai întrebări, ne poți contacta la <strong>0746 254 162</strong>.</p>
-                    <p>Cu drag,<br>Echipa Panaghia</p>
-                </div>
-            </div>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto;">
+                <tr>
+                    <td style="background: #D4A847; color: white; padding: 20px; text-align: center;">
+                        <h2 style="margin: 0;">Actualizare Comandă</h2>
+                        <p style="margin: 5px 0 0 0;">{order.get('order_number', 'N/A')}</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 20px; background: #f9f9f9;">
+                        <p>Dragă {order.get('customer', {}).get('name', 'Client')},</p>
+                        <p>{status_messages[new_status]}</p>
+                        <p>Dacă ai întrebări, ne poți contacta la <strong>0746 254 162</strong>.</p>
+                        <p>Cu drag,<br>Echipa Panaghia</p>
+                    </td>
+                </tr>
+            </table>
         </body>
         </html>
         """
         
-        await send_email(
-            config=config,
-            to_email=customer_email,
-            subject=f"Actualizare Comandă #{order.get('order_number', 'N/A')} - Panaghia",
-            html_content=html_content
-        )
+        params = {
+            "from": FROM_EMAIL,
+            "to": [customer_email],
+            "subject": f"Actualizare Comandă #{order.get('order_number', 'N/A')} - Panaghia",
+            "html": html_content
+        }
         
+        await asyncio.to_thread(resend.Emails.send, params)
+        logger.info(f"Status update email sent for order {order.get('order_number')}")
         return True
         
     except Exception as e:
