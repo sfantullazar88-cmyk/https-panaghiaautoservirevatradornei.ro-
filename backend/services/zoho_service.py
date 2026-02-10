@@ -7,12 +7,21 @@ import httpx
 import logging
 from datetime import datetime, timezone, timedelta
 from typing import Optional, Dict, Any
+from dotenv import load_dotenv
+from pathlib import Path
+
+# Load environment variables
+load_dotenv(Path(__file__).parent.parent / '.env')
 
 logger = logging.getLogger(__name__)
 
-# Zoho Configuration
-ZOHO_CLIENT_ID = os.environ.get('ZOHO_CLIENT_ID')
-ZOHO_CLIENT_SECRET = os.environ.get('ZOHO_CLIENT_SECRET')
+# Zoho Configuration - read dynamically
+def get_zoho_config():
+    return {
+        'client_id': os.environ.get('ZOHO_CLIENT_ID', ''),
+        'client_secret': os.environ.get('ZOHO_CLIENT_SECRET', '')
+    }
+
 ZOHO_ACCOUNTS_URL = "https://accounts.zoho.eu"  # EU domain for Romania
 ZOHO_API_URL = "https://www.zohoapis.eu/crm/v6"
 
