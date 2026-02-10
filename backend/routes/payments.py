@@ -59,7 +59,7 @@ async def create_checkout_session(request: CreateCheckoutRequest, http_request: 
         raise HTTPException(status_code=400, detail="Comanda a fost deja plătită")
     
     # Get Stripe API key
-    api_key = os.environ.get('STRIPE_API_KEY')
+    api_key = os.environ.get('STRIPE_SECRET_KEY')
     if not api_key:
         raise HTTPException(status_code=500, detail="Stripe nu este configurat")
     
@@ -136,7 +136,7 @@ async def get_payment_status(session_id: str):
     """Get payment status for a checkout session"""
     from emergentintegrations.payments.stripe.checkout import StripeCheckout
     
-    api_key = os.environ.get('STRIPE_API_KEY')
+    api_key = os.environ.get('STRIPE_SECRET_KEY')
     if not api_key:
         raise HTTPException(status_code=500, detail="Stripe nu este configurat")
     
