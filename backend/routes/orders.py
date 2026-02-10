@@ -137,6 +137,18 @@ async def update_order_status(order_id: str, status_data: dict):
         raise HTTPException(status_code=404, detail="Order not found")
     
     result.pop("_id", None)
+    
+    # Sync status update to Zoho CRM (async)
+    zoho_deal_id = result.get("zoho_deal_id")
+    if zoho_deal_id:
+        try:
+            from services.zoho_service import update_deal_status
+            import asyncio
+            asyncio.create_task(update_deal_status(zoho_deal_id, new_status))
+        except Exception as e:
+            import logging
+            logging.error(f"Failed to sync status to Zoho CRM: {e}")
+    
     return result
 
 
