@@ -295,10 +295,10 @@ Observații: {customer.get('notes', '')}
                     logger.info(f"Order synced to Zoho CRM as deal: {deal_id}")
                     
                     # Save deal_id to order in database
-                    if deal_id and db:
+                    if deal_id and db is not None:
                         await db.orders.update_one(
                             {"id": order_data.get("id")},
-                            {"$set": {"zoho_deal_id": deal_id}}
+                            {"$set": {"zoho_deal_id": str(deal_id)}}
                         )
                     
                     return deal_id
