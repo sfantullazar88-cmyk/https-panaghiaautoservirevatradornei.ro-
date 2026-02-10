@@ -154,9 +154,9 @@ Aplicație de food delivery pentru restaurantul "Panaghia - Autoservire Vatra Do
 - [ ] Aplicație mobilă (React Native)
 
 ## URL-uri
-- **Preview**: https://food-delivery-240.preview.emergentagent.com
-- **API**: https://food-delivery-240.preview.emergentagent.com/api
-- **Admin Panel**: https://food-delivery-240.preview.emergentagent.com/admin
+- **Preview**: https://quickbites-125.preview.emergentagent.com
+- **API**: https://quickbites-125.preview.emergentagent.com/api
+- **Admin Panel**: https://quickbites-125.preview.emergentagent.com/admin
 
 ## Status Proiect
 **COMPLET FUNCȚIONAL** - Frontend + Backend + Autentificare + Admin Panel + Plăți Stripe
