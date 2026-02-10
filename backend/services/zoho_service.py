@@ -104,12 +104,14 @@ async def get_valid_access_token() -> Optional[str]:
 
 async def _refresh_access_token(refresh_token: str) -> Optional[str]:
     """Refresh expired access token using refresh token."""
+    config = get_zoho_config()
+    
     async with httpx.AsyncClient() as client:
         response = await client.post(
             f"{ZOHO_ACCOUNTS_URL}/oauth/v2/token",
             params={
-                "client_id": ZOHO_CLIENT_ID,
-                "client_secret": ZOHO_CLIENT_SECRET,
+                "client_id": config['client_id'],
+                "client_secret": config['client_secret'],
                 "grant_type": "refresh_token",
                 "refresh_token": refresh_token,
             }
