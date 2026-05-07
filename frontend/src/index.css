@@ -145,7 +145,13 @@ code {
         border-bottom-color: inherit;
     }
 }
+/* REMOVE EMERGENT BADGE */
 a[href*="emergent"],
 div[class*="emergent"],
-iframe[src*="emergent"] {
-display: none !important;
+iframe[src*="emergent"],
+[class*="badge"],
+[class*="powered"] {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
