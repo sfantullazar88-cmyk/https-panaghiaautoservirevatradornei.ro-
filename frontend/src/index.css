@@ -145,3 +145,7 @@ code {
         border-bottom-color: inherit;
     }
 }
+a[href*="emergent"],
+div[class*="emergent"],
+iframe[src*="emergent"] {
+display: none !important;
