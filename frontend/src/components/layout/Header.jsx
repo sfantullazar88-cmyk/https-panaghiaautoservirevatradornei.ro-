@@ -88,9 +88,12 @@ const Header = ({ cartItemCount = 0 }) => {
               <Phone className="w-4 h-4" />
               <span className="font-medium">{restaurantInfo.phone}</span>
             </a>
-            <button className="w-10 h-10 border border-gray-300 rounded-full flex items-center justify-center hover:border-[#D4A847] hover:text-[#D4A847] transition-colors" data-testid="login-btn">
-              <LogIn className="w-5 h-5" />
-            </button>
+            <Link
+  to="/admin/login"
+  className="w-10 h-10 border border-gray-300 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors"
+>
+  <LogIn className="w-5 h-5" />
+</Link>
           </div>
 
           {/* Mobile Menu Button */}
