@@ -113,9 +113,13 @@ const AdminLogin = () => {
                 />
                 <span className="text-sm text-gray-400">Ține-mă minte</span>
               </label>
-              <Link to="/admin/reset-password" className="text-sm text-[#D4A847] hover:underline">
-                Am uitat parola
-              </Link>
+              <button
+  type="button"
+  onClick={() => alert("Recuperarea parolei nu este configurată încă. Contactați administratorul site-ului.")}
+  className="text-sm text-[#D4A847] hover:underline"
+>
+  Am uitat parola
+</button>
             </div>
 
             <button
