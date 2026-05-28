@@ -436,24 +436,31 @@ const ItemModal = ({ item, categories, onSave, onClose }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">URL Imagine</label>
-              <input
-  type="file"
-  accept="image/*"
-  onChange={(e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  <label className="block text-sm font-medium text-gray-700 mb-2">Poză produs</label>
+  <input
+    type="file"
+    accept="image/*"
+    onChange={(e) => {
+      const file = e.target.files[0];
+      if (!file) return;
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setFormData({ ...formData, image: reader.result });
-    };
-    reader.readAsDataURL(file);
-  }}
-  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#D4A847]"
-/>
-              />
-            </div>
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, image: reader.result });
+      };
+      reader.readAsDataURL(file);
+    }}
+    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#D4A847]"
+  />
+
+  {formData.image && (
+    <img
+      src={formData.image}
+      alt="preview"
+      className="mt-3 w-40 rounded-xl"
+    />
+  )}
+</div>
 
             <div className="flex gap-4">
               <label className="flex items-center gap-2">
