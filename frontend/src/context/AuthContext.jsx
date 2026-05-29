@@ -35,6 +35,22 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     setError(null);
     try {
+      const verifyOtp = async (email, code) => {
+  setError(null);
+  try {
+    const response = await authApi.verifyOtp(email, code);
+
+    localStorage.setItem('adminToken', response.access_token);
+    localStorage.setItem('refreshToken', response.refresh_token);
+    localStorage.setItem('adminUser', JSON.stringify(response.user));
+
+    setUser(response.user);
+    return response;
+  } catch (err) {
+    setError(err.message);
+    throw err;
+  }
+};
       const response = await authApi.login(email, password);
       
       localStorage.setItem('adminToken', response.access_token);
@@ -81,14 +97,15 @@ export const AuthProvider = ({ children }) => {
   };
 
   const value = {
-    user,
-    loading,
-    error,
-    isAuthenticated: !!user,
-    login,
-    logout,
-    refreshToken,
-  };
+  user,
+  loading,
+  error,
+  isAuthenticated: !!user,
+  login,
+  verifyOtp,
+  logout,
+  refreshToken,
+};
 
   return (
     <AuthContext.Provider value={value}>

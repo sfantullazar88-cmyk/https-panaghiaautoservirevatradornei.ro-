@@ -64,7 +64,11 @@ export const authApi = {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   }),
-  
+  verifyOtp: (email, code) => publicApiCall('/auth/verify-otp', {
+  method: 'POST',
+  body: JSON.stringify({ email, code }),
+}),
+
   refresh: (refreshToken) => publicApiCall('/auth/refresh', {
     method: 'POST',
     body: JSON.stringify({ refresh_token: refreshToken }),

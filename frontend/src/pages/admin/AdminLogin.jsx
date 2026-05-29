@@ -6,27 +6,42 @@ import { useAuth } from '../../context/AuthContext';
 const AdminLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [otpCode, setOtpCode] = useState('');
+  const [otpStep, setOtpStep] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
-  const { login } = useAuth();
+  const { login, verifyOtp } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+  e.preventDefault();
+  setLoading(true);
+  setError('');
 
-    try {
-      await login(email, password);
+  try {
+    if (otpStep) {
+      await verifyOtp(email, otpCode);
       navigate('/admin');
-    } catch (err) {
-      setError(err.message || 'Eroare la autentificare');
-    } finally {
-      setLoading(false);
+      return;
     }
-  };
+
+    const response = await login(email, password);
+
+    if (response.otp_required) {
+      setOtpStep(true);
+      setError('');
+      return;
+    }
+
+    navigate('/admin');
+  } catch (err) {
+    setError(err.message || 'Eroare la autentificare');
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center px-4" data-testid="admin-login-page">
@@ -103,6 +118,22 @@ const AdminLogin = () => {
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
+              {otpStep && (
+  <div>
+    <label className="block text-sm font-medium text-gray-300 mb-2">
+      Cod primit pe email
+    </label>
+
+    <input
+      type="text"
+      value={otpCode}
+      onChange={(e) => setOtpCode(e.target.value)}
+      required
+      className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-[#D4A847] focus:ring-2 focus:ring-[#D4A847]/20 transition-all"
+      placeholder="Introdu codul OTP"
+    />
+  </div>
+)}
             </div>
 
             <div className="flex items-center justify-between">
@@ -136,7 +167,7 @@ const AdminLogin = () => {
               ) : (
                 <>
                   <LogIn className="w-5 h-5" />
-                  <span>Autentificare</span>
+                 <span>{otpStep ? 'Verifică codul' : 'Autentificare'}</span>
                 </>
               )}
             </button>

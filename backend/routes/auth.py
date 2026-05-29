@@ -7,6 +7,7 @@ from typing import Optional
 import os
 import secrets
 import hashlib
+import requests
 
 from fastapi import APIRouter, HTTPException, Depends, Request, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -53,13 +54,18 @@ class LoginRequest(BaseModel):
     email: EmailStr
     password: str
 
+class OTPVerifyRequest(BaseModel):
+    email: EmailStr
+    code: str
 
 class LoginResponse(BaseModel):
-    access_token: str
-    refresh_token: str
+    access_token: Optional[str] = None
+    refresh_token: Optional[str] = None
     token_type: str = "bearer"
-    expires_in: int
-    user: dict
+    expires_in: Optional[int] = None
+    user: Optional[dict] = None
+    otp_required: bool = False
+    message: Optional[str] = None
 
 
 class TokenRefreshRequest(BaseModel):
@@ -141,7 +147,36 @@ def generate_reset_token() -> str:
 
 def hash_reset_token(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
+def otp_enabled():
+    return os.environ.get("OTP_ENABLED", "false").lower() == "true"
 
+
+def generate_otp():
+    return str(secrets.randbelow(900000) + 100000)
+
+
+async def send_otp_email(email: str, code: str):
+    api_key = os.environ.get("RESEND_API_KEY")
+    from_email = os.environ.get("OTP_FROM_EMAIL", "onboarding@resend.dev")
+
+    if not api_key:
+        print(f"[OTP] Cod pentru {email}: {code}")
+        return
+
+    requests.post(
+        "https://api.resend.com/emails",
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+        json={
+            "from": from_email,
+            "to": email,
+            "subject": "Cod conectare Panaghia Admin",
+            "html": f"<p>Codul tău de conectare este:</p><h2>{code}</h2><p>Codul expiră în 10 minute.</p>",
+        },
+        timeout=10,
+    )
 
 # ============== RATE LIMITING ==============
 
@@ -262,20 +297,40 @@ async def login(request: LoginRequest):
     )
     
     # Create tokens
-    token_data = {"sub": email, "user_id": user["id"]}
-    access_token = create_access_token(token_data)
-    refresh_token = create_refresh_token(token_data)
-    
+    # OTP LOGIN
+if otp_enabled():
+    otp_code = generate_otp()
+
+    await db.otp_codes.insert_one({
+        "email": email,
+        "code": otp_code,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "expires_at": (datetime.now(timezone.utc) + timedelta(minutes=10)).isoformat(),
+        "used": False
+    })
+
+    await send_otp_email(email, otp_code)
+
     return LoginResponse(
-        access_token=access_token,
-        refresh_token=refresh_token,
-        expires_in=get_access_token_expire() * 60,
-        user={
-            "id": user["id"],
-            "email": user["email"],
-            "is_superadmin": user.get("is_superadmin", False)
-        }
+        otp_required=True,
+        message="Cod OTP trimis pe email"
     )
+
+# Normal login fallback
+token_data = {"sub": email, "user_id": user["id"]}
+access_token = create_access_token(token_data)
+refresh_token = create_refresh_token(token_data)
+
+return LoginResponse(
+    access_token=access_token,
+    refresh_token=refresh_token,
+    expires_in=get_access_token_expire() * 60,
+    user={
+        "id": user["id"],
+        "email": user["email"],
+        "is_superadmin": user.get("is_superadmin", False)
+    }
+)
 
 
 @router.post("/refresh", response_model=LoginResponse)
@@ -412,7 +467,52 @@ async def get_current_user_info(current_user: dict = Depends(get_current_admin))
     """Get current user info"""
     return current_user
 
+@router.post("/verify-otp", response_model=LoginResponse)
+async def verify_otp(request: OTPVerifyRequest):
+    otp_doc = await db.otp_codes.find_one({
+        "email": request.email.lower(),
+        "code": request.code,
+        "used": False
+    })
 
+    if not otp_doc:
+        raise HTTPException(status_code=400, detail="Cod OTP invalid")
+
+    expires_at = datetime.fromisoformat(otp_doc["expires_at"])
+
+    if datetime.now(timezone.utc) > expires_at:
+        raise HTTPException(status_code=400, detail="Cod OTP expirat")
+
+    user = await db.admin_users.find_one({
+        "email": request.email.lower()
+    })
+
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilizator negăsit")
+
+    await db.otp_codes.update_one(
+        {"_id": otp_doc["_id"]},
+        {"$set": {"used": True}}
+    )
+
+    token_data = {
+        "sub": user["email"],
+        "user_id": user["id"]
+    }
+
+    access_token = create_access_token(token_data)
+    refresh_token = create_refresh_token(token_data)
+
+    return LoginResponse(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        expires_in=get_access_token_expire() * 60,
+        user={
+            "id": user["id"],
+            "email": user["email"],
+            "is_superadmin": user.get("is_superadmin", False)
+        }
+    )
 @router.post("/logout")
 async def logout(current_user: dict = Depends(get_current_admin)):
     """Logout - client should discard tokens"""
