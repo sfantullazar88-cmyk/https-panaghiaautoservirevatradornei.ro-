@@ -296,43 +296,40 @@ async def login(request: LoginRequest):
         }
     )
     
-    # Create tokens
-    # OTP LOGIN
-if otp_enabled():
-    otp_code = generate_otp()
+       # OTP LOGIN
+    if otp_enabled():
+        otp_code = generate_otp()
 
-    await db.otp_codes.insert_one({
-        "email": email,
-        "code": otp_code,
-        "created_at": datetime.now(timezone.utc).isoformat(),
-        "expires_at": (datetime.now(timezone.utc) + timedelta(minutes=10)).isoformat(),
-        "used": False
-    })
+        await db.otp_codes.insert_one({
+            "email": email,
+            "code": otp_code,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "expires_at": (datetime.now(timezone.utc) + timedelta(minutes=10)).isoformat(),
+            "used": False
+        })
 
-    await send_otp_email(email, otp_code)
+        await send_otp_email(email, otp_code)
+
+        return LoginResponse(
+            otp_required=True,
+            message="Cod OTP trimis pe email"
+        )
+
+    # Normal login fallback
+    token_data = {"sub": email, "user_id": user["id"]}
+    access_token = create_access_token(token_data)
+    refresh_token = create_refresh_token(token_data)
 
     return LoginResponse(
-        otp_required=True,
-        message="Cod OTP trimis pe email"
+        access_token=access_token,
+        refresh_token=refresh_token,
+        expires_in=get_access_token_expire() * 60,
+        user={
+            "id": user["id"],
+            "email": user["email"],
+            "is_superadmin": user.get("is_superadmin", False)
+        }
     )
-
-# Normal login fallback
-token_data = {"sub": email, "user_id": user["id"]}
-access_token = create_access_token(token_data)
-refresh_token = create_refresh_token(token_data)
-
-return LoginResponse(
-    access_token=access_token,
-    refresh_token=refresh_token,
-    expires_in=get_access_token_expire() * 60,
-    user={
-        "id": user["id"],
-        "email": user["email"],
-        "is_superadmin": user.get("is_superadmin", False)
-    }
-)
-
-
 @router.post("/refresh", response_model=LoginResponse)
 async def refresh_token(request: TokenRefreshRequest):
     """Refresh access token"""
