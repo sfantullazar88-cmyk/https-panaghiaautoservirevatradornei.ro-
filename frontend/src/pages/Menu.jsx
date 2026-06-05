@@ -17,7 +17,7 @@ const Menu = ({ onAddToCart }) => {
           menuApi.getItems()
         ]);
         setCategories(categoriesRes);
-        setMenuItems(itemsRes);
+        setMenuItems(itemsRes.filter(item => item.is_available === true));
       } catch (error) {
         console.error('Error fetching menu data:', error);
       } finally {
