@@ -17,10 +17,9 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Check for existing session
     const token = localStorage.getItem('adminToken');
     const savedUser = localStorage.getItem('adminUser');
-    
+
     if (token && savedUser) {
       try {
         setUser(JSON.parse(savedUser));
@@ -29,34 +28,38 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('adminUser');
       }
     }
+
     setLoading(false);
   }, []);
 
   const login = async (email, password) => {
     setError(null);
     try {
-      const verifyOtp = async (email, code) => {
-  setError(null);
-  try {
-    const response = await authApi.verifyOtp(email, code);
-
-    localStorage.setItem('adminToken', response.access_token);
-    localStorage.setItem('refreshToken', response.refresh_token);
-    localStorage.setItem('adminUser', JSON.stringify(response.user));
-
-    setUser(response.user);
-    return response;
-  } catch (err) {
-    setError(err.message);
-    throw err;
-  }
-};
       const response = await authApi.login(email, password);
-      
+
+      if (!response.otp_required) {
+        localStorage.setItem('adminToken', response.access_token);
+        localStorage.setItem('refreshToken', response.refresh_token);
+        localStorage.setItem('adminUser', JSON.stringify(response.user));
+        setUser(response.user);
+      }
+
+      return response;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
+  const verifyOtp = async (email, code) => {
+    setError(null);
+    try {
+      const response = await authApi.verifyOtp(email, code);
+
       localStorage.setItem('adminToken', response.access_token);
       localStorage.setItem('refreshToken', response.refresh_token);
       localStorage.setItem('adminUser', JSON.stringify(response.user));
-      
+
       setUser(response.user);
       return response;
     } catch (err) {
@@ -68,10 +71,8 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await authApi.logout();
-    } catch (e) {
-      // Ignore logout errors
-    }
-    
+    } catch (e) {}
+
     localStorage.removeItem('adminToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('adminUser');
@@ -80,6 +81,7 @@ export const AuthProvider = ({ children }) => {
 
   const refreshToken = async () => {
     const refresh = localStorage.getItem('refreshToken');
+
     if (!refresh) {
       logout();
       return;
@@ -97,15 +99,15 @@ export const AuthProvider = ({ children }) => {
   };
 
   const value = {
-  user,
-  loading,
-  error,
-  isAuthenticated: !!user,
-  login,
-  verifyOtp,
-  logout,
-  refreshToken,
-};
+    user,
+    loading,
+    error,
+    isAuthenticated: !!user,
+    login,
+    verifyOtp,
+    logout,
+    refreshToken,
+  };
 
   return (
     <AuthContext.Provider value={value}>
