@@ -8,7 +8,13 @@ const Order = ({ cart = [], onUpdateCart, onRemoveFromCart, onClearCart }) => {
   const [searchParams] = useSearchParams();
   const [orderType, setOrderType] = useState('pickup');
   const [paymentMethod, setPaymentMethod] = useState('cash');
-  if (paymentMethod === 'card') {
+  const [customerInfo, setCustomerInfo] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    address: '',
+    notes: ''
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderResult, setOrderResult] = useState(null);
   const [error, setError] = useState(null);
@@ -73,9 +79,7 @@ const Order = ({ cart = [], onUpdateCart, onRemoveFromCart, onClearCart }) => {
           phone: customerInfo.phone,
           email: customerInfo.email || null,
           address: orderType === 'delivery' ? customerInfo.address : null,
-       notes: customerInfo.notes || null,
-latitude: customerInfo.latitude,
-longitude: customerInfo.longitude
+          notes: customerInfo.notes || null
         },
         order_type: orderType,
         payment_method: paymentMethod
@@ -361,37 +365,20 @@ longitude: customerInfo.longitude
                   />
                 </div>
                 {orderType === 'delivery' && (
-  <div className="space-y-3">
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">Adresă livrare *</label>
-      <input
-        type="text"
-        name="address"
-        value={customerInfo.address}
-        onChange={handleChange}
-        required
-        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#D4A847] focus:ring-2 focus:ring-[#D4A847]/20 transition-all"
-        placeholder="Strada, nr., bloc, apart."
-        data-testid="address-input"
-      />
-    </div>
-
-    <div className="rounded-xl overflow-hidden border border-gray-200">
-      <iframe
-        title="Alege locația pe hartă"
-        width="100%"
-        height="260"
-        loading="lazy"
-        allowFullScreen
-        src={`https://www.google.com/maps?q=${encodeURIComponent(customerInfo.address || 'Vatra Dornei')}&output=embed`}
-      ></iframe>
-    </div>
-
-    <p className="text-sm text-gray-500">
-      Scrie adresa completă, iar harta se actualizează automat.
-    </p>
-  </div>
-)}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Adresă livrare *</label>
+                    <input
+                      type="text"
+                      name="address"
+                      value={customerInfo.address}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#D4A847] focus:ring-2 focus:ring-[#D4A847]/20 transition-all"
+                      placeholder="Strada, nr., bloc, apart."
+                      data-testid="address-input"
+                    />
+                  </div>
+                )}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Observații</label>
                   <textarea
