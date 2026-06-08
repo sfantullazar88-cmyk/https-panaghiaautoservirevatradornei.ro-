@@ -111,8 +111,13 @@ app.include_router(api_router)
 
 app.add_middleware(
     CORSMiddleware,
+    allow_origins=[
+        "https://www.panaghiaautoservirevatradornei.ro",
+        "https://panaghiaautoservirevatradornei.ro",
+        "http://localhost:3000",
+        "http://localhost:5173",
+    ],
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
     allow_methods=["*"],
     allow_headers=["*"],
 )
