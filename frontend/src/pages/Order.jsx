@@ -71,8 +71,6 @@ const [selectedLocation, setSelectedLocation] = useState({
   const total = subtotal + deliveryFee;
 
   const handleSubmit = async (e) => {
-    alert("Metoda de plată este: " + paymentMethod);
-    alert("Butonul merge, funcția pornește");
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
@@ -98,17 +96,15 @@ const [selectedLocation, setSelectedLocation] = useState({
       };
 
       const result = await ordersApi.create(orderData);
-      alert("Comanda s-a creat. Urmează Stripe.");
+
       // If card payment, redirect to Stripe
       if (paymentMethod === 'card') {
-        alert("A intrat pe plata cu cardul.");
         try {
           const checkoutData = await paymentsApi.createCheckout(
             result.id,
             window.location.origin
           );
           // Redirect to Stripe Checkout
-          alert("Stripe a trimis linkul de plată.");
           window.location.href = checkoutData.checkout_url;
           return;
         } catch (stripeErr) {
@@ -319,10 +315,7 @@ const [selectedLocation, setSelectedLocation] = useState({
                   </button>
                   <button
                     type="button"
-                    onClick={() => {
-  alert("Ai ales plata cu cardul");
-  setPaymentMethod('card');
-}}
+                    onClick={() => setPaymentMethod('card')}
                     className={`flex items-center justify-center gap-2 py-3 rounded-xl font-medium transition-all ${
                       paymentMethod === 'card'
                         ? 'bg-[#D4A847] text-white'
@@ -461,7 +454,7 @@ const [selectedLocation, setSelectedLocation] = useState({
 
               <button
                 onClick={handleSubmit}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !customerInfo.name || !customerInfo.phone || (orderType === 'delivery' && !customerInfo.address)}
                 className="w-full bg-[#D4A847] text-white py-4 rounded-full hover:bg-[#c49a3d] transition-colors font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 data-testid="submit-order-btn"
               >
