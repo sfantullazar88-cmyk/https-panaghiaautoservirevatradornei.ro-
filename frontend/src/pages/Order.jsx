@@ -71,6 +71,7 @@ const [selectedLocation, setSelectedLocation] = useState({
   const total = subtotal + deliveryFee;
 
   const handleSubmit = async (e) => {
+    alert("Butonul merge, funcția pornește");
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
