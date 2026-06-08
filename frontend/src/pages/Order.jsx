@@ -99,6 +99,7 @@ const Order = ({ cart = [], onUpdateCart, onRemoveFromCart, onClearCart }) => {
           return;
         } catch (stripeErr) {
           console.error('Stripe error:', stripeErr);
+          alert("Eroare Stripe: " + (stripeErr.message || stripeErr));
           setError('Plata online nu este disponibilă momentan. Vă rugăm să alegeți plata în numerar.');
           setIsSubmitting(false);
           return;
