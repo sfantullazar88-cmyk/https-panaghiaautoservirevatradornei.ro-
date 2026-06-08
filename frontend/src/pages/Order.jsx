@@ -71,6 +71,7 @@ const [selectedLocation, setSelectedLocation] = useState({
   const total = subtotal + deliveryFee;
 
   const handleSubmit = async (e) => {
+    alert("Metoda de plată este: " + paymentMethod);
     alert("Butonul merge, funcția pornește");
     e.preventDefault();
     setIsSubmitting(true);
@@ -318,7 +319,10 @@ const [selectedLocation, setSelectedLocation] = useState({
                   </button>
                   <button
                     type="button"
-                    onClick={() => setPaymentMethod('card')}
+                    onClick={() => {
+  alert("Ai ales plata cu cardul");
+  setPaymentMethod('card');
+}}
                     className={`flex items-center justify-center gap-2 py-3 rounded-xl font-medium transition-all ${
                       paymentMethod === 'card'
                         ? 'bg-[#D4A847] text-white'
