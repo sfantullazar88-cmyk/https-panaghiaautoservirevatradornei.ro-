@@ -454,7 +454,7 @@ const [selectedLocation, setSelectedLocation] = useState({
 
               <button
                 onClick={handleSubmit}
-                disabled={isSubmitting || !customerInfo.name || !customerInfo.phone || (orderType === 'delivery' && !customerInfo.address)}
+                disabled={isSubmitting}
                 className="w-full bg-[#D4A847] text-white py-4 rounded-full hover:bg-[#c49a3d] transition-colors font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 data-testid="submit-order-btn"
               >
