@@ -97,15 +97,17 @@ const [selectedLocation, setSelectedLocation] = useState({
       };
 
       const result = await ordersApi.create(orderData);
-
+      alert("Comanda s-a creat. Urmează Stripe.");
       // If card payment, redirect to Stripe
       if (paymentMethod === 'card') {
+        alert("A intrat pe plata cu cardul.");
         try {
           const checkoutData = await paymentsApi.createCheckout(
             result.id,
             window.location.origin
           );
           // Redirect to Stripe Checkout
+          alert("Stripe a trimis linkul de plată.");
           window.location.href = checkoutData.checkout_url;
           return;
         } catch (stripeErr) {
