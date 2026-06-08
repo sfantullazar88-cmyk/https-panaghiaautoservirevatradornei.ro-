@@ -377,6 +377,9 @@ const Order = ({ cart = [], onUpdateCart, onRemoveFromCart, onClearCart }) => {
                       placeholder="Strada, nr., bloc, apart."
                       data-testid="address-input"
                     />
+                    <p className="text-sm text-gray-500 mt-2">
+  Scrie adresa completă de livrare. În pasul următor vom adăuga harta cu PIN.
+</p>
                   </div>
                 )}
                 <div>
