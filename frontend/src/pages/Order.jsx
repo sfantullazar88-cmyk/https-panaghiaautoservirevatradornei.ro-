@@ -3,7 +3,6 @@ import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft, Phone, CheckCircle, Credit
 import { Link, useSearchParams } from 'react-router-dom';
 import { ordersApi, restaurantApi } from '../services/api';
 import { paymentsApi } from '../services/adminApi';
-import { GoogleMap, Marker, useLoadScript } from '@react-google-maps/api';
 
 const Order = ({ cart = [], onUpdateCart, onRemoveFromCart, onClearCart }) => {
   const [searchParams] = useSearchParams();
@@ -22,14 +21,6 @@ const Order = ({ cart = [], onUpdateCart, onRemoveFromCart, onClearCart }) => {
   const [restaurantInfo, setRestaurantInfo] = useState({ phone: '0746 254 162' });
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
-  const { isLoaded } = useLoadScript({
-  googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
-});
-
-const [selectedLocation, setSelectedLocation] = useState({
-  lat: 47.3476,
-  lng: 25.3556
-});
   useEffect(() => {
     const fetchRestaurantInfo = async () => {
       try {
@@ -88,8 +79,7 @@ const [selectedLocation, setSelectedLocation] = useState({
           phone: customerInfo.phone,
           email: customerInfo.email || null,
           address: orderType === 'delivery' ? customerInfo.address : null,
-         notes: customerInfo.notes || null,
-        
+          notes: customerInfo.notes || null
         },
         order_type: orderType,
         payment_method: paymentMethod
@@ -387,31 +377,6 @@ const [selectedLocation, setSelectedLocation] = useState({
                       placeholder="Strada, nr., bloc, apart."
                       data-testid="address-input"
                     />
-                    <div className="mt-4 rounded-xl overflow-hidden border border-gray-200">
-  {isLoaded ? (
-    <GoogleMap
-      mapContainerStyle={{ width: '100%', height: '260px' }}
-      center={selectedLocation}
-      zoom={14}
-      onClick={(e) => {
-        const lat = e.latLng.lat();
-        const lng = e.latLng.lng();
-
-        setSelectedLocation({ lat, lng });
-      }}
-    >
-      <Marker position={selectedLocation} />
-    </GoogleMap>
-  ) : (
-    <div className="h-[260px] flex items-center justify-center bg-gray-100 text-gray-500">
-      Se încarcă harta...
-    </div>
-  )}
-</div>
-
-<p className="text-sm text-gray-500 mt-2">
-  Apasă pe hartă pentru a pune PIN-ul exact al livrării.
-</p>
                   </div>
                 )}
                 <div>
