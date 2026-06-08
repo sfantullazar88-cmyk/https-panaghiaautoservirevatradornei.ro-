@@ -89,8 +89,7 @@ const [selectedLocation, setSelectedLocation] = useState({
           email: customerInfo.email || null,
           address: orderType === 'delivery' ? customerInfo.address : null,
          notes: customerInfo.notes || null,
-         latitude: selectedLocation.lat,
-         longitude: selectedLocation.lng
+        
         },
         order_type: orderType,
         payment_method: paymentMethod
