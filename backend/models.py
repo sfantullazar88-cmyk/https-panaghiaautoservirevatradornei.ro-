@@ -76,6 +76,9 @@ class CustomerInfo(BaseModel):
     address: Optional[str] = None
     notes: Optional[str] = None
 
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+
 
 class Order(BaseModel):
     model_config = ConfigDict(extra="ignore")
