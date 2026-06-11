@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, Request
+from fastapi import FastAPI, Response, APIRouter, Request
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -108,6 +108,8 @@ api_router.include_router(zoho.router)
 
 # Include the router in the main app
 app.include_router(api_router)
+
+app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
