@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Response, APIRouter
+from fastapi import FastAPI, APIRouter, Request
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -111,11 +111,17 @@ app.include_router(api_router)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
+    allow_origins=[
+        "https://www.panaghiaautoservirevatradornei.ro",
+        "https://panaghiaautoservirevatradornei.ro",
+        "http://localhost:3000",
+        "http://localhost:5173",
+    ],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
