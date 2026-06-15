@@ -109,7 +109,7 @@ api_router.include_router(zoho.router)
 # Include the router in the main app
 app.include_router(api_router)
 
-app = FastAPI()
+
 
 app.add_middleware(
     CORSMiddleware,
