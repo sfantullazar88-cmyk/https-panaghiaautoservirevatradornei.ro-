@@ -297,7 +297,7 @@ async def login(request: LoginRequest):
     )
     
        # OTP LOGIN
-    if False:
+    if otp_enabled():
         otp_code = generate_otp()
 
         await db.otp_codes.insert_one({
