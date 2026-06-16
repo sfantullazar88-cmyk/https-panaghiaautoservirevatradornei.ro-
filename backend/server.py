@@ -31,17 +31,28 @@ admin.set_db(db)
 payments.set_db(db)
 zoho.set_db(db)
 zoho_service.set_db(db)
-
-# Create the main app
+# Create FastAPI app
 app = FastAPI(
     title="Panaghia API",
     description="API for Panaghia Autoservire Vatra Dornei",
     version="2.0.0"
 )
 
-# Create a router with the /api prefix
-api_router = APIRouter(prefix="/api")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://www.panaghiaautoservirevatradornei.ro",
+        "https://panaghiaautoservirevatradornei.ro",
+        "http://localhost:3000",
+        "http://localhost:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
+# API router
+api_router = APIRouter(prefix="/api")
 
 # Define Models
 class StatusCheck(BaseModel):
@@ -109,20 +120,6 @@ api_router.include_router(zoho.router)
 # Include the router in the main app
 app.include_router(api_router)
 
-
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "https://www.panaghiaautoservirevatradornei.ro",
-        "https://panaghiaautoservirevatradornei.ro",
-        "http://localhost:3000",
-        "http://localhost:5173",
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 # Configure logging
 logging.basicConfig(
