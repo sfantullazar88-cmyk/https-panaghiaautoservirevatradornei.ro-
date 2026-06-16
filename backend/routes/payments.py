@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from typing import Optional
 import os
 import uuid
-
+import stripe
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 
@@ -70,44 +70,74 @@ async def create_checkout_session(request: CreateCheckoutRequest, http_request: 
     cancel_url = f"{host_url}/comanda?cancelled=true"
     
     # Initialize Stripe
-    stripe_checkout = StripeCheckout(api_key=api_key, webhook_url=webhook_url)
-    
-    # Create checkout session
-    # Amount in RON (or EUR if RON not supported)
-    amount = float(order["total"])
-    
-    checkout_request = CheckoutSessionRequest(
-        amount=amount,
-        currency="ron",  # Romanian Lei
+    # Initialize Stripe official SDK
+stripe.api_key = api_key
+
+amount = float(order["total"])
+amount_cents = int(amount * 100)
+
+metadata = {
+    "order_id": order["id"],
+    "order_number": order["order_number"],
+    "customer_name": order["customer"]["name"],
+    "customer_phone": order["customer"]["phone"]
+}
+
+try:
+    session = stripe.checkout.Session.create(
+        payment_method_types=["card"],
+        mode="payment",
+        line_items=[
+            {
+                "price_data": {
+                    "currency": "ron",
+                    "product_data": {
+                        "name": f"Comandă Panaghia #{order['order_number']}",
+                    },
+                    "unit_amount": amount_cents,
+                },
+                "quantity": 1,
+            }
+        ],
         success_url=success_url,
         cancel_url=cancel_url,
-        metadata={
-            "order_id": order["id"],
-            "order_number": order["order_number"],
-            "customer_name": order["customer"]["name"],
-            "customer_phone": order["customer"]["phone"]
-        }
+        metadata=metadata,
     )
-    
-    try:
-        session = await stripe_checkout.create_checkout_session(checkout_request)
-    except Exception as e:
-        # If RON doesn't work, try EUR
-        checkout_request.currency = "eur"
-        session = await stripe_checkout.create_checkout_session(checkout_request)
+    currency = "ron"
+except Exception:
+    session = stripe.checkout.Session.create(
+        payment_method_types=["card"],
+        mode="payment",
+        line_items=[
+            {
+                "price_data": {
+                    "currency": "eur",
+                    "product_data": {
+                        "name": f"Comandă Panaghia #{order['order_number']}",
+                    },
+                    "unit_amount": amount_cents,
+                },
+                "quantity": 1,
+            }
+        ],
+        success_url=success_url,
+        cancel_url=cancel_url,
+        metadata=metadata,
+    )
+    currency = "eur"
     
     # Create payment transaction record
     transaction = {
         "id": str(uuid.uuid4()),
         "order_id": order["id"],
         "order_number": order["order_number"],
-        "session_id": session.session_id,
+       "session_id": session.id,
         "amount": amount,
-        "currency": checkout_request.currency,
+        "currency": currency,
         "payment_status": "pending",
         "status": "initiated",
         "customer_email": order["customer"].get("email"),
-        "metadata": checkout_request.metadata,
+        "metadata": metadata,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "updated_at": datetime.now(timezone.utc).isoformat()
     }
@@ -119,15 +149,15 @@ async def create_checkout_session(request: CreateCheckoutRequest, http_request: 
         {"id": order["id"]},
         {
             "$set": {
-                "stripe_session_id": session.session_id,
+                "stripe_session_id": session.id,
                 "payment_status": "pending"
             }
         }
     )
     
     return CheckoutResponse(
-        checkout_url=session.url,
-        session_id=session.session_id
+     checkout_url=session.url,
+session_id=session.id
     )
 
 
