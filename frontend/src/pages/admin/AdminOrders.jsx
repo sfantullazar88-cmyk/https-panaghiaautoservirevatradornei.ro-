@@ -247,6 +247,18 @@ const AdminOrders = () => {
                     <span className="font-medium">Adresă:</span> {selectedOrder.customer.address}
                   </p>
                 )}
+                {selectedOrder.coordinates && (
+  <div className="mt-3">
+    <a
+      href={`https://www.google.com/maps?q=${selectedOrder.coordinates.lat},${selectedOrder.coordinates.lng}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="bg-green-600 text-white px-3 py-2 rounded"
+    >
+      📍 Deschide locația pe Google Maps
+    </a>
+  </div>
+)}
                 {selectedOrder.customer?.notes && (
                   <p className="text-gray-600 mt-2">
                     <span className="font-medium">Note:</span> {selectedOrder.customer.notes}
