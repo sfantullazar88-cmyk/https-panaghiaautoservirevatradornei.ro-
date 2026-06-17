@@ -162,7 +162,7 @@ useEffect(() => {
           email: customerInfo.email || null,
           address: orderType === 'delivery' ? customerInfo.address : null,
           notes: customerInfo.notes || null,
-          location: orderType === 'delivery' ? selectedLocation : null
+          coordinates: orderType === 'delivery' ? selectedLocation : null
         },
         order_type: orderType,
         payment_method: paymentMethod
