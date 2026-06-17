@@ -72,13 +72,13 @@ async def create_order(order_data: dict):
         total=total
     )
     
-   doc = order.model_dump()
+    doc = order.model_dump()
 
-customer_data = order_data.get("customer", {})
-if customer_data.get("coordinates"):
-    doc["coordinates"] = customer_data.get("coordinates")
-
-# Convert datetime to ISO string for MongoDB
+    customer_data = order_data.get("customer", {})
+    if customer_data.get("coordinates"):
+        doc["coordinates"] = customer_data.get("coordinates")
+    
+    # Convert datetime to ISO string for MongoDB
     doc['created_at'] = doc['created_at'].isoformat()
     doc['updated_at'] = doc['updated_at'].isoformat()
     
@@ -93,7 +93,6 @@ if customer_data.get("coordinates"):
         import asyncio
         asyncio.create_task(send_new_order_notification(doc))
     except Exception as e:
-        # Log but don't fail the order creation
         import logging
         logging.error(f"Failed to queue email notification: {e}")
     
@@ -103,10 +102,8 @@ if customer_data.get("coordinates"):
         import asyncio
         
         async def sync_to_zoho():
-            # First sync customer
             customer_data = doc.get('customer', {})
             contact_id = await sync_customer_to_zoho(customer_data)
-            # Then sync order with contact reference
             await sync_order_to_zoho(doc, contact_id)
         
         asyncio.create_task(sync_to_zoho())
@@ -115,9 +112,6 @@ if customer_data.get("coordinates"):
         logging.error(f"Failed to queue Zoho CRM sync: {e}")
     
     return doc
-
-
-@router.patch("/{order_id}/status", response_model=dict)
 async def update_order_status(order_id: str, status_data: dict):
     """Update order status"""
     valid_statuses = ['pending', 'confirmed', 'preparing', 'ready', 'delivered', 'cancelled']
