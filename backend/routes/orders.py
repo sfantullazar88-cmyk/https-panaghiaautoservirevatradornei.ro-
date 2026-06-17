@@ -73,6 +73,10 @@ async def create_order(order_data: dict):
     )
     
     doc = order.model_dump()
+
+    customer_data = order_data.get("customer", {})
+if customer_data.get("coordinates"):
+    doc["coordinates"] = customer_data.get("coordinates")
     
     # Convert datetime to ISO string for MongoDB
     doc['created_at'] = doc['created_at'].isoformat()
