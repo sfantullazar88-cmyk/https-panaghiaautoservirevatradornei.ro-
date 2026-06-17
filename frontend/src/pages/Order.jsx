@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft, Phone, CheckCircle, CreditCard, Banknote } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ordersApi, restaurantApi } from '../services/api';
@@ -20,6 +20,11 @@ const Order = ({ cart = [], onUpdateCart, onRemoveFromCart, onClearCart }) => {
   const [error, setError] = useState(null);
   const [restaurantInfo, setRestaurantInfo] = useState({ phone: '0746 254 162' });
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const mapRef = useRef(null);
+const mapInstanceRef = useRef(null);
+const markerRef = useRef(null);
+
+const [selectedLocation, setSelectedLocation] = useState(null);
 
   useEffect(() => {
     const fetchRestaurantInfo = async () => {
@@ -43,6 +48,83 @@ const Order = ({ cart = [], onUpdateCart, onRemoveFromCart, onClearCart }) => {
       setError('Plata a fost anulată. Puteți încerca din nou.');
     }
   }, [searchParams]);
+const initDeliveryMap = () => {
+  if (!window.google || !mapRef.current || mapInstanceRef.current) return;
+
+  const defaultLocation = { lat: 47.3445, lng: 25.3593 }; // Vatra Dornei
+
+  const map = new window.google.maps.Map(mapRef.current, {
+    center: defaultLocation,
+    zoom: 14,
+  });
+
+  mapInstanceRef.current = map;
+
+  const marker = new window.google.maps.Marker({
+    position: defaultLocation,
+    map,
+    draggable: true,
+    title: 'Locația de livrare',
+  });
+
+  markerRef.current = marker;
+  setSelectedLocation(defaultLocation);
+
+  const geocoder = new window.google.maps.Geocoder();
+
+  const updateAddressFromPosition = (position) => {
+    const lat = position.lat();
+    const lng = position.lng();
+
+    setSelectedLocation({ lat, lng });
+
+    geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+      if (status === 'OK' && results && results[0]) {
+        setCustomerInfo(prev => ({
+          ...prev,
+          address: results[0].formatted_address
+        }));
+      }
+    });
+  };
+
+  marker.addListener('dragend', () => {
+    updateAddressFromPosition(marker.getPosition());
+  });
+
+  map.addListener('click', (event) => {
+    marker.setPosition(event.latLng);
+    updateAddressFromPosition(event.latLng);
+  });
+};
+
+const loadGoogleMaps = () => {
+  if (window.google) {
+    setTimeout(initDeliveryMap, 100);
+    return;
+  };
+
+  
+
+  const existingScript = document.querySelector('script[src*="maps.googleapis.com/maps/api/js"]');
+  if (existingScript) {
+    existingScript.addEventListener('load', () => setTimeout(initDeliveryMap, 100));
+    return;
+  }
+
+  const script = document.createElement('script');
+  script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}&libraries=places`;
+  script.async = true;
+  script.defer = true;
+  script.onload = () => setTimeout(initDeliveryMap, 100);
+  document.head.appendChild(script);
+};
+
+useEffect(() => {
+  if (orderType === 'delivery') {
+    setTimeout(loadGoogleMaps, 300);
+  }
+}, [orderType]);
 
   const checkPaymentStatus = async (sessionId) => {
     try {
@@ -79,7 +161,8 @@ const Order = ({ cart = [], onUpdateCart, onRemoveFromCart, onClearCart }) => {
           phone: customerInfo.phone,
           email: customerInfo.email || null,
           address: orderType === 'delivery' ? customerInfo.address : null,
-          notes: customerInfo.notes || null
+          notes: customerInfo.notes || null,
+          location: orderType === 'delivery' ? selectedLocation : null
         },
         order_type: orderType,
         payment_method: paymentMethod
@@ -366,20 +449,41 @@ const Order = ({ cart = [], onUpdateCart, onRemoveFromCart, onClearCart }) => {
                   />
                 </div>
                 {orderType === 'delivery' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Adresă livrare *</label>
-                    <input
-                      type="text"
-                      name="address"
-                      value={customerInfo.address}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#D4A847] focus:ring-2 focus:ring-[#D4A847]/20 transition-all"
-                      placeholder="Strada, nr., bloc, apart."
-                      data-testid="address-input"
-                    />
-                  </div>
-                )}
+  <div className="space-y-4">
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-2">Adresă livrare *</label>
+      <input
+        type="text"
+        name="address"
+        value={customerInfo.address}
+        onChange={handleChange}
+        required
+        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#D4A847] focus:ring-2 focus:ring-[#D4A847]/20 transition-all"
+        placeholder="Strada, nr., bloc, apart."
+        data-testid="address-input"
+      />
+    </div>
+
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-2">
+        Alege locația pe hartă
+      </label>
+      <p className="text-sm text-gray-500 mb-2">
+        Apasă pe hartă sau mută PIN-ul exact unde vrei să livrăm mâncarea.
+      </p>
+      <div
+        ref={mapRef}
+        className="w-full h-80 rounded-xl border border-gray-200 overflow-hidden"
+        data-testid="delivery-map"
+      />
+      {selectedLocation && (
+        <p className="text-xs text-gray-500 mt-2">
+          Coordonate: {selectedLocation.lat.toFixed(6)}, {selectedLocation.lng.toFixed(6)}
+        </p>
+      )}
+    </div>
+  </div>
+)}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Observații</label>
                   <textarea
