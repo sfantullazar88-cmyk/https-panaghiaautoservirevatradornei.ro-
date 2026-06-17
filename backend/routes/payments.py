@@ -6,20 +6,18 @@ from typing import Optional
 import os
 import uuid
 
+import stripe
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 
 router = APIRouter(prefix="/payments", tags=["Payments"])
 
-# Database reference
 db = None
 
 def set_db(database):
     global db
     db = database
 
-
-# ============== MODELS ==============
 
 class CreateCheckoutRequest(BaseModel):
     order_id: str
@@ -39,123 +37,113 @@ class PaymentStatusResponse(BaseModel):
     order_id: Optional[str] = None
 
 
-# ============== ROUTES ==============
-
 @router.post("/checkout", response_model=CheckoutResponse)
 async def create_checkout_session(request: CreateCheckoutRequest, http_request: Request):
-    """Create Stripe checkout session for an order"""
-    from emergentintegrations.payments.stripe.checkout import (
-        StripeCheckout, 
-        CheckoutSessionRequest
-    )
-    
-    # Get order
     order = await db.orders.find_one({"id": request.order_id}, {"_id": 0})
     if not order:
         raise HTTPException(status_code=404, detail="Comandă negăsită")
-    
-    # Check if already paid
+
     if order.get("payment_status") == "paid":
         raise HTTPException(status_code=400, detail="Comanda a fost deja plătită")
-    
-    # Get Stripe API key
-    api_key = os.environ.get('STRIPE_SECRET_KEY')
+
+    api_key = os.environ.get("STRIPE_SECRET_KEY")
     if not api_key:
         raise HTTPException(status_code=500, detail="Stripe nu este configurat")
-    
-    # Build URLs
-    host_url = request.origin_url.rstrip('/')
-    webhook_url = f"{str(http_request.base_url).rstrip('/')}/api/webhook/stripe"
+
+    stripe.api_key = api_key
+
+    host_url = request.origin_url.rstrip("/")
     success_url = f"{host_url}/comanda/success?session_id={{CHECKOUT_SESSION_ID}}"
     cancel_url = f"{host_url}/comanda?cancelled=true"
-    
-    # Initialize Stripe
-    stripe_checkout = StripeCheckout(api_key=api_key, webhook_url=webhook_url)
-    
-    # Create checkout session
-    # Amount in RON (or EUR if RON not supported)
-    amount = float(order["total"])
-    
-    checkout_request = CheckoutSessionRequest(
-        amount=amount,
-        currency="ron",  # Romanian Lei
-        success_url=success_url,
-        cancel_url=cancel_url,
-        metadata={
-            "order_id": order["id"],
-            "order_number": order["order_number"],
-            "customer_name": order["customer"]["name"],
-            "customer_phone": order["customer"]["phone"]
-        }
-    )
-    
+
+    amount = float(order.get("total", 0))
+    amount_cents = int(round(amount * 100))
+
+    if amount_cents <= 0:
+        raise HTTPException(status_code=400, detail="Total comandă invalid")
+
+    metadata = {
+        "order_id": order["id"],
+        "order_number": str(order.get("order_number", "")),
+        "customer_name": order.get("customer", {}).get("name", ""),
+        "customer_phone": order.get("customer", {}).get("phone", "")
+    }
+
     try:
-        session = await stripe_checkout.create_checkout_session(checkout_request)
+        session = stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            mode="payment",
+            line_items=[
+                {
+                    "price_data": {
+                        "currency": "ron",
+                        "product_data": {
+                            "name": f"Comandă Panaghia #{order.get('order_number', '')}",
+                        },
+                        "unit_amount": amount_cents,
+                    },
+                    "quantity": 1,
+                }
+            ],
+            success_url=success_url,
+            cancel_url=cancel_url,
+            metadata=metadata,
+        )
+        currency = "ron"
     except Exception as e:
-        # If RON doesn't work, try EUR
-        checkout_request.currency = "eur"
-        session = await stripe_checkout.create_checkout_session(checkout_request)
-    
-    # Create payment transaction record
+        raise HTTPException(status_code=500, detail=f"Eroare Stripe: {str(e)}")
+
     transaction = {
         "id": str(uuid.uuid4()),
         "order_id": order["id"],
-        "order_number": order["order_number"],
-        "session_id": session.session_id,
+        "order_number": order.get("order_number"),
+        "session_id": session.id,
         "amount": amount,
-        "currency": checkout_request.currency,
+        "currency": currency,
         "payment_status": "pending",
         "status": "initiated",
-        "customer_email": order["customer"].get("email"),
-        "metadata": checkout_request.metadata,
+        "customer_email": order.get("customer", {}).get("email"),
+        "metadata": metadata,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "updated_at": datetime.now(timezone.utc).isoformat()
     }
-    
+
     await db.payment_transactions.insert_one(transaction)
-    
-    # Update order with session ID
+
     await db.orders.update_one(
         {"id": order["id"]},
         {
             "$set": {
-                "stripe_session_id": session.session_id,
+                "stripe_session_id": session.id,
                 "payment_status": "pending"
             }
         }
     )
-    
+
     return CheckoutResponse(
         checkout_url=session.url,
-        session_id=session.session_id
+        session_id=session.id
     )
 
 
 @router.get("/status/{session_id}", response_model=PaymentStatusResponse)
 async def get_payment_status(session_id: str):
-    """Get payment status for a checkout session"""
-    from emergentintegrations.payments.stripe.checkout import StripeCheckout
-    
-    api_key = os.environ.get('STRIPE_SECRET_KEY')
+    api_key = os.environ.get("STRIPE_SECRET_KEY")
     if not api_key:
         raise HTTPException(status_code=500, detail="Stripe nu este configurat")
-    
-    stripe_checkout = StripeCheckout(api_key=api_key, webhook_url="")
-    
+
+    stripe.api_key = api_key
+
     try:
-        status = await stripe_checkout.get_checkout_status(session_id)
+        session = stripe.checkout.Session.retrieve(session_id)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Eroare la verificarea statusului: {str(e)}")
-    
-    # Find transaction
+
     transaction = await db.payment_transactions.find_one({"session_id": session_id})
     order_id = transaction["order_id"] if transaction else None
-    
-    # Update transaction and order if payment completed
-    if status.payment_status == "paid" and transaction:
-        # Check if already processed
+
+    if session.payment_status == "paid" and transaction:
         if transaction.get("payment_status") != "paid":
-            # Update transaction
             await db.payment_transactions.update_one(
                 {"session_id": session_id},
                 {
@@ -166,52 +154,49 @@ async def get_payment_status(session_id: str):
                     }
                 }
             )
-            
-            # Update order
+
             await db.orders.update_one(
                 {"id": order_id},
                 {
                     "$set": {
                         "payment_status": "paid",
                         "payment_method": "card_online",
-                        "status": "confirmed"  # Auto-confirm paid orders
+                        "status": "confirmed"
                     }
                 }
             )
-    
+
     return PaymentStatusResponse(
-        status=status.status,
-        payment_status=status.payment_status,
-        amount_total=status.amount_total / 100,  # Convert from cents
-        currency=status.currency,
+        status=session.status,
+        payment_status=session.payment_status,
+        amount_total=(session.amount_total or 0) / 100,
+        currency=session.currency,
         order_id=order_id
     )
 
 
 @router.post("/webhook/stripe")
 async def stripe_webhook(request: Request):
-    """Handle Stripe webhooks"""
-    from emergentintegrations.payments.stripe.checkout import StripeCheckout
-    
-    api_key = os.environ.get('STRIPE_API_KEY')
-    if not api_key:
-        return {"status": "error", "message": "Stripe not configured"}
-    
-    stripe_checkout = StripeCheckout(api_key=api_key, webhook_url="")
-    
-    # Get raw body
-    body = await request.body()
-    signature = request.headers.get("Stripe-Signature")
-    
+    payload = await request.body()
+    sig_header = request.headers.get("stripe-signature")
+    webhook_secret = os.environ.get("STRIPE_WEBHOOK_SECRET")
+
     try:
-        webhook_response = await stripe_checkout.handle_webhook(body, signature)
-        
-        # Process webhook
-        if webhook_response.payment_status == "paid":
-            session_id = webhook_response.session_id
-            order_id = webhook_response.metadata.get("order_id")
-            
-            # Update transaction
+        if webhook_secret and sig_header:
+            event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
+        else:
+            event = await request.json()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Webhook invalid: {str(e)}")
+
+    event_type = event.get("type")
+    data_object = event.get("data", {}).get("object", {})
+
+    if event_type == "checkout.session.completed":
+        session_id = data_object.get("id")
+
+        transaction = await db.payment_transactions.find_one({"session_id": session_id})
+        if transaction:
             await db.payment_transactions.update_one(
                 {"session_id": session_id},
                 {
@@ -222,22 +207,16 @@ async def stripe_webhook(request: Request):
                     }
                 }
             )
-            
-            # Update order
-            if order_id:
-                await db.orders.update_one(
-                    {"id": order_id},
-                    {
-                        "$set": {
-                            "payment_status": "paid",
-                            "payment_method": "card_online",
-                            "status": "confirmed"
-                        }
+
+            await db.orders.update_one(
+                {"id": transaction["order_id"]},
+                {
+                    "$set": {
+                        "payment_status": "paid",
+                        "payment_method": "card_online",
+                        "status": "confirmed"
                     }
-                )
-        
-        return {"status": "success", "event_type": webhook_response.event_type}
-    
-    except Exception as e:
-        print(f"Webhook error: {e}")
-        return {"status": "error", "message": str(e)}
+                }
+            )
+
+    return {"status": "success"}
