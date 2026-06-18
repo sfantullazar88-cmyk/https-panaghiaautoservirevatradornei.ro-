@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Header from "./components/layout/Header";
@@ -9,6 +9,7 @@ import Menu from "./pages/Menu";
 import Team from "./pages/Team";
 import Contact from "./pages/Contact";
 import Order from "./pages/Order";
+import { messaging, getToken, onMessage } from "./firebase";
 
 // Legal pages imports
 import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
@@ -59,6 +60,31 @@ const PublicLayout = ({ children, cartItemCount }) => (
 
 function AppContent() {
   const [cart, setCart] = useState([]);
+  useEffect(() => {
+  const setupNotifications = async () => {
+    try {
+      if (!("Notification" in window)) return;
+
+      const permission = await Notification.requestPermission();
+
+      if (permission === "granted") {
+        const token = await getToken(messaging, {
+          vapidKey: "BMHdpsOq08rGsDDXYAff9WLC1hcJSUCn3Lj5l3nWjl-7c0wXLk-VuNrZIBAEGpDQHPjw6ABaFQqkoN4dAJ-ry6k"
+        });
+
+        console.log("Firebase notification token:", token);
+      }
+
+      onMessage(messaging, (payload) => {
+        alert(payload?.notification?.title || "Comandă nouă!");
+      });
+    } catch (error) {
+      console.error("Eroare notificări:", error);
+    }
+  };
+
+  setupNotifications();
+}, []);
 
   const addToCart = (item) => {
     setCart((prevCart) => {
