@@ -11,7 +11,7 @@ import uuid
 from datetime import datetime, timezone
 
 # Import routes
-from routes import menu, orders, restaurant, auth, admin, payments, zoho
+from routes import menu, orders, restaurant, auth, admin, payments, zoho, notifications
 from services import zoho_service
 
 ROOT_DIR = Path(__file__).parent
@@ -26,6 +26,7 @@ db = client[os.environ['DB_NAME']]
 menu.set_db(db)
 orders.set_db(db)
 restaurant.set_db(db)
+notifications.set_db(db)
 auth.set_db(db)
 admin.set_db(db)
 payments.set_db(db)
@@ -111,6 +112,7 @@ async def stripe_webhook_root(request: Request):
 # Include all routers
 api_router.include_router(menu.router)
 api_router.include_router(orders.router)
+api_router.include_router(notifications.router)
 api_router.include_router(restaurant.router)
 api_router.include_router(auth.router)
 api_router.include_router(admin.router)
