@@ -74,7 +74,19 @@ function AppContent() {
 
         console.log("Firebase notification token:", token);
       }
-
+await fetch(
+  `${process.env.REACT_APP_BACKEND_URL}/api/notifications/register-token`,
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      token,
+      device_name: "Motorola Edge 40"
+    })
+  }
+);
       onMessage(messaging, (payload) => {
         alert(payload?.notification?.title || "Comandă nouă!");
       });
