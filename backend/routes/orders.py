@@ -83,6 +83,17 @@ async def create_order(order_data: dict):
     doc['updated_at'] = doc['updated_at'].isoformat()
     
     await db.orders.insert_one(doc)
+    try:
+    from routes.notifications import send_push_notification
+    import asyncio
+
+    title = "🍽️ Comandă nouă PanAghia"
+    body = f"{doc.get('order_number')} - {doc.get('total')} lei"
+
+    asyncio.create_task(send_push_notification(title, body))
+except Exception as e:
+    import logging
+    logging.error(f"Failed to queue push notification: {e}")
     
     # Return without _id
     doc.pop('_id', None)
