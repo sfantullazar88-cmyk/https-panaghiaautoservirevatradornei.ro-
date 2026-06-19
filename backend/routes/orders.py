@@ -84,7 +84,8 @@ async def create_order(order_data: dict):
     
     await db.orders.insert_one(doc)
     try:
-    from routes.notifications import send_push_notification
+
+        from routes.notifications import send_push_notification
     import asyncio
 
     title = "🍽️ Comandă nouă PanAghia"
