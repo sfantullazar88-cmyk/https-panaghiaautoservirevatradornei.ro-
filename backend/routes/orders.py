@@ -49,17 +49,13 @@ async def get_order_by_number(order_number: str):
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     return order
-
-
 @router.post("/", response_model=dict)
 async def create_order(order_data: dict):
     """Create a new order"""
     from models import Order, OrderCreate, OrderItem, CustomerInfo
     
-    # Calculate total
     total = sum(item['price'] * item['quantity'] for item in order_data.get('items', []))
     
-    # Create order object
     order_create = OrderCreate(
         items=[OrderItem(**item) for item in order_data.get('items', [])],
         customer=CustomerInfo(**order_data.get('customer', {})),
@@ -78,7 +74,6 @@ async def create_order(order_data: dict):
     if customer_data.get("coordinates"):
         doc["coordinates"] = customer_data.get("coordinates")
     
-        # Convert datetime to ISO string for MongoDB
     doc['created_at'] = doc['created_at'].isoformat()
     doc['updated_at'] = doc['updated_at'].isoformat()
     
@@ -90,16 +85,13 @@ async def create_order(order_data: dict):
 
         title = "🍽️ Comandă nouă PanAghia"
         body = f"{doc.get('order_number')} - {doc.get('total')} lei"
-
         asyncio.create_task(send_push_notification(title, body))
     except Exception as e:
         import logging
         logging.error(f"Failed to queue push notification: {e}")
-
-    # Return without _id
+    
     doc.pop('_id', None)
     
-    # Send email notification (async, don't block response)
     try:
         from services.email_service import send_new_order_notification
         import asyncio
@@ -108,7 +100,6 @@ async def create_order(order_data: dict):
         import logging
         logging.error(f"Failed to queue email notification: {e}")
     
-    # Sync to Zoho CRM (async, don't block response)
     try:
         from services.zoho_service import sync_customer_to_zoho, sync_order_to_zoho
         import asyncio
