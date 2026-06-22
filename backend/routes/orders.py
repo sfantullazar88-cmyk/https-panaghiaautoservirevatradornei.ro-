@@ -78,11 +78,13 @@ async def create_order(order_data: dict):
     if customer_data.get("coordinates"):
         doc["coordinates"] = customer_data.get("coordinates")
     
-    # Convert datetime to ISO string for MongoDB
+        # Convert datetime to ISO string for MongoDB
     doc['created_at'] = doc['created_at'].isoformat()
     doc['updated_at'] = doc['updated_at'].isoformat()
     
-        try:
+    await db.orders.insert_one(doc)
+
+    try:
         from routes.notifications import send_push_notification
         import asyncio
 
@@ -93,6 +95,7 @@ async def create_order(order_data: dict):
     except Exception as e:
         import logging
         logging.error(f"Failed to queue push notification: {e}")
+
     # Return without _id
     doc.pop('_id', None)
     
