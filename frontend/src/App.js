@@ -68,25 +68,26 @@ function AppContent() {
       const permission = await Notification.requestPermission();
 
       if (permission === "granted") {
-        const token = await getToken(messaging, {
-          vapidKey: "BMHdpsOq08rGsDDXYAff9WLC1hcJSUCn3Lj5l3nWjl-7c0wXLk-VuNrZIBAEGpDQHPjw6ABaFQqkoN4dAJ-ry6k"
-        });
+  const token = await getToken(messaging, {
+    vapidKey: "BMHdpsOq08rGsDDXYAff9WLC1hcJSUCn3Lj5l3nWjl-7c0wXLk-VuNrZIBAEGpDQHPjw6ABaFQqkoN4dAJ-ry6k"
+  });
 
-        console.log("Firebase notification token:", token);
-      }
-await fetch(
-  `${process.env.REACT_APP_BACKEND_URL}/api/notifications/register-token`,
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      token,
-      device_name: "Motorola Edge 40"
-    })
-  }
-);
+  console.log("Firebase notification token:", token);
+
+  await fetch(
+    `${process.env.REACT_APP_BACKEND_URL}/api/notifications/register-token`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        token: token,
+        device_name: "Motorola Edge 40"
+      })
+    }
+  );
+}
       onMessage(messaging, (payload) => {
         alert(payload?.notification?.title || "Comandă nouă!");
       });
