@@ -1,8 +1,10 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from pydantic import BaseModel
 from datetime import datetime, timezone
 import os
-import requests
+import json
+import firebase_admin
+from firebase_admin import credentials, messaging
 
 router = APIRouter(prefix="/notifications", tags=["Notifications"])
 
@@ -22,33 +24,45 @@ class TokenRequest(BaseModel):
 async def register_token(request: TokenRequest):
     existing = await db.push_tokens.find_one({"token": request.token})
 
+    data = {
+        "token": request.token,
+        "device_name": request.device_name,
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "is_active": True
+    }
+
     if existing:
-        await db.push_tokens.update_one(
-            {"token": request.token},
-            {"$set": {
-                "device_name": request.device_name,
-                "updated_at": datetime.now(timezone.utc).isoformat()
-            }}
-        )
+        await db.push_tokens.update_one({"token": request.token}, {"$set": data})
     else:
-        await db.push_tokens.insert_one({
-            "token": request.token,
-            "device_name": request.device_name,
-            "created_at": datetime.now(timezone.utc).isoformat(),
-            "updated_at": datetime.now(timezone.utc).isoformat(),
-            "is_active": True
-        })
+        data["created_at"] = datetime.now(timezone.utc).isoformat()
+        await db.push_tokens.insert_one(data)
 
     return {"status": "registered"}
 
 
+def init_firebase():
+    if firebase_admin._apps:
+        return
+
+    service_account_json = os.environ.get("FIREBASE_SERVICE_ACCOUNT_JSON")
+    if not service_account_json:
+        print("FIREBASE_SERVICE_ACCOUNT_JSON missing")
+        return
+
+    service_account = json.loads(service_account_json)
+    cred = credentials.Certificate(service_account)
+    firebase_admin.initialize_app(cred)
+
+
 async def send_push_notification(title: str, body: str):
-    server_key = os.environ.get("FIREBASE_SERVER_KEY")
-    if not server_key:
-        print("FIREBASE_SERVER_KEY missing")
+    init_firebase()
+
+    if not firebase_admin._apps:
+        print("Firebase Admin not initialized")
         return False
 
     tokens = await db.push_tokens.find({"is_active": True}).to_list(1000)
+
     if not tokens:
         print("No push tokens registered")
         return False
@@ -60,27 +74,23 @@ async def send_push_notification(title: str, body: str):
         if not token:
             continue
 
-        response = requests.post(
-            "https://fcm.googleapis.com/fcm/send",
-            headers={
-                "Authorization": f"key={server_key}",
-                "Content-Type": "application/json"
-            },
-            json={
-                "to": token,
-                "notification": {
-                    "title": title,
-                    "body": body
-                },
-                "data": {
-                    "click_action": "OPEN_ADMIN"
-                }
-            }
+        message = messaging.Message(
+            notification=messaging.Notification(
+                title=title,
+                body=body
+            ),
+            token=token,
+            webpush=messaging.WebpushConfig(
+                fcm_options=messaging.WebpushFCMOptions(
+                    link="https://www.panaghiaautoservirevatradornei.ro/admin/orders"
+                )
+            )
         )
 
-        if response.status_code == 200:
+        try:
+            messaging.send(message)
             success += 1
-        else:
-            print("Push failed:", response.text)
+        except Exception as e:
+            print(f"Push failed for token {token}: {e}")
 
     return success > 0
