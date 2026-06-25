@@ -163,7 +163,7 @@ async def send_otp_email(email: str, code: str):
         print(f"[OTP] Cod pentru {email}: {code}")
         return
 
-    response = requests.post(
+    response = requests.post( 
     "https://api.resend.com/emails",
     headers={
         "Authorization": f"Bearer {api_key}",
@@ -177,8 +177,6 @@ async def send_otp_email(email: str, code: str):
     },
     timeout=10,
 )
-print("OTP STATUS:", response.status_code)
-print("OTP RESPONSE:", response.text)
 
 
 # ============== RATE LIMITING ==============
