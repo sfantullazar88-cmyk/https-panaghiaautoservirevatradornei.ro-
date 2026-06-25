@@ -163,20 +163,23 @@ async def send_otp_email(email: str, code: str):
         print(f"[OTP] Cod pentru {email}: {code}")
         return
 
-    requests.post(
-        "https://api.resend.com/emails",
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        },
-        json={
-            "from": from_email,
-            "to": email,
-            "subject": "Cod conectare Panaghia Admin",
-            "html": f"<p>Codul tău de conectare este:</p><h2>{code}</h2><p>Codul expiră în 10 minute.</p>",
-        },
-        timeout=10,
-    )
+    response = requests.post(
+    "https://api.resend.com/emails",
+    headers={
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    },
+    json={
+        "from": from_email,
+        "to": email,
+        "subject": "Cod conectare Panaghia Admin",
+        "html": f"<p>Codul tău de conectare este:</p><h2>{code}</h2><p>Codul expiră în 10 minute.</p>",
+    },
+    timeout=10,
+)
+
+print("OTP STATUS:", response.status_code)
+print("OTP RESPONSE:", response.text)
 
 # ============== RATE LIMITING ==============
 
