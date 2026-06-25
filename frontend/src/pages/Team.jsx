@@ -1,8 +1,18 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ChefHat, Heart, Award } from 'lucide-react';
-import { teamMembers, restaurantInfo } from '../data/mock';
+import { restaurantInfo } from '../data/mock';
 
 const Team = () => {
+  const [teamMembers, setTeamMembers] = useState([]);
+
+useEffect(() => {
+  fetch(`${process.env.REACT_APP_BACKEND_URL}/api/admin/team`)
+    .then((res) => res.json())
+    .then((data) => {
+      setTeamMembers(data.members || []);
+    })
+    .catch((err) => console.error("Eroare încărcare echipă:", err));
+}, []);
   return (
     <div className="min-h-screen bg-gray-50 pt-24">
       {/* Hero Section */}
@@ -39,11 +49,8 @@ const Team = () => {
               </p>
             </div>
             <div className="relative">
-              <img 
-                src="https://images.unsplash.com/photo-1600565193348-f74bd3c7ccdf?w=600&q=80"
-                alt="Chef cooking"
-                className="w-full h-96 object-cover rounded-2xl shadow-lg"
-              />
+              src="/images/team-cover.jpg"
+
               <div className="absolute -bottom-6 -left-6 bg-[#D4A847] text-white p-6 rounded-2xl shadow-lg">
                 <p className="text-4xl font-bold">15+</p>
                 <p className="text-sm">Ani de experiență</p>
@@ -108,9 +115,9 @@ const Team = () => {
               <div key={member.id} className="group">
                 <div className="relative overflow-hidden rounded-2xl mb-4">
                   <img 
-                    src={member.image}
+                    src={member.image_url}
                     alt={member.name}
-                    className="w-full h-80 object-cover group-hover:scale-105 transition-transform duration-500"
+                   <p className="text-sm">{member.description}</p>
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                     <div className="absolute bottom-4 left-4 right-4 text-white">

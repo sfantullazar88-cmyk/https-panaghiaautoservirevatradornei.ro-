@@ -417,3 +417,56 @@ async def delete_review_admin(
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Recenzie negăsită")
     return {"message": "Recenzie ștearsă cu succes"}
+# ================= TEAM MANAGEMENT =================
+
+@router.get("/team")
+async def get_team(current_user: dict = Depends(get_current_admin)):
+    members = await db.team.find({}, {"_id": 0}).to_list(100)
+    return {"members": members}
+
+
+@router.post("/team")
+async def create_team_member(
+    member: dict,
+    current_user: dict = Depends(get_current_admin)
+):
+    import uuid
+
+    member["id"] = str(uuid.uuid4())
+
+    await db.team.insert_one(member)
+
+    return member
+
+
+@router.put("/team/{member_id}")
+async def update_team_member(
+    member_id: str,
+    member: dict,
+    current_user: dict = Depends(get_current_admin)
+):
+    result = await db.team.find_one_and_update(
+        {"id": member_id},
+        {"$set": member},
+        return_document=True
+    )
+
+    if not result:
+        raise HTTPException(status_code=404, detail="Membru negăsit")
+
+    result.pop("_id", None)
+
+    return result
+
+
+@router.delete("/team/{member_id}")
+async def delete_team_member(
+    member_id: str,
+    current_user: dict = Depends(get_current_admin)
+):
+    result = await db.team.delete_one({"id": member_id})
+
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Membru negăsit")
+
+    return {"message": "Membru șters"}
