@@ -88,9 +88,19 @@ async def send_push_notification(title: str, body: str):
         )
 
         try:
-            messaging.send(message)
+            response = messaging.send(message)
+            print(f"Push sent successfully: {response}")
             success += 1
+
         except Exception as e:
-            print(f"Push failed for token {token}: {e}")
+            error_text = str(e)
+            print(f"Push failed for token {token}: {error_text}")
+
+            if "Requested entity was not found" in error_text or "registration-token-not-registered" in error_text:
+                await db.push_tokens.update_one(
+                    {"token": token},
+                    {"$set": {"is_active": False}}
+                )
+                print("Invalid push token disabled")
 
     return success > 0
