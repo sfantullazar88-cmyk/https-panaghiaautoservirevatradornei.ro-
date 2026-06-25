@@ -177,9 +177,9 @@ async def send_otp_email(email: str, code: str):
     },
     timeout=10,
 )
-
 print("OTP STATUS:", response.status_code)
 print("OTP RESPONSE:", response.text)
+
 
 # ============== RATE LIMITING ==============
 
