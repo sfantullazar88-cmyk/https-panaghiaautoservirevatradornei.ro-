@@ -3,7 +3,7 @@ Admin routes for Panaghia - Dashboard, Statistics, Delivery Management
 """
 from datetime import datetime, timedelta, timezone
 from typing import Optional, List
-from fastapi import APIRouter, HTTPException, Depends, Query
+from fastapi import APIRouter, HTTPException, Depends, Query, UploadFile, File
 from pydantic import BaseModel
 
 from routes.auth import get_current_admin
@@ -470,3 +470,33 @@ async def delete_team_member(
         raise HTTPException(status_code=404, detail="Membru negăsit")
 
     return {"message": "Membru șters"}
+# ============== IMAGE UPLOAD / CLOUDINARY ==============
+
+@router.post("/upload-image")
+async def upload_image_admin(
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_admin)
+):
+    import os
+    import cloudinary
+    import cloudinary.uploader
+
+    cloudinary.config(
+        cloud_name=os.environ.get("CLOUDINARY_CLOUD_NAME"),
+        api_key=os.environ.get("CLOUDINARY_API_KEY"),
+        api_secret=os.environ.get("CLOUDINARY_API_SECRET"),
+        secure=True
+    )
+
+    try:
+        result = cloudinary.uploader.upload(
+            file.file,
+            folder="panaghia/team"
+        )
+
+        return {
+            "url": result.get("secure_url")
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Eroare upload imagine: {str(e)}")

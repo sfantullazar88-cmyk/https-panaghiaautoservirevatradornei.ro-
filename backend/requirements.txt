@@ -123,3 +123,4 @@ zipp==3.23.0
 resend
 stripe
 firebase-admin
+cloudinary
