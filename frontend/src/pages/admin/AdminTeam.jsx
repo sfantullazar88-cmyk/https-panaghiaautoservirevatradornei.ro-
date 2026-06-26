@@ -19,7 +19,10 @@ const AdminTeam = () => {
   const [showForm, setShowForm] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  const token = localStorage.getItem("admin_token");
+  const token =
+  localStorage.getItem("access_token") ||
+  localStorage.getItem("admin_token") ||
+  localStorage.getItem("token");
 
   const loadTeam = async () => {
     const res = await fetch(`${API_URL}/api/admin/team`, {
