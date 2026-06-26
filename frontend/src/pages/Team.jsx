@@ -114,11 +114,11 @@ useEffect(() => {
             {teamMembers.map((member) => (
               <div key={member.id} className="group">
                 <div className="relative overflow-hidden rounded-2xl mb-4">
-                  <img 
-                    src={member.image_url}
-                    alt={member.name}
-                   <p className="text-sm">{member.description}</p>
-                  />
+                  <img
+  src={member.image_url}
+  alt={member.name}
+  className="w-full h-80 object-cover group-hover:scale-105 transition-transform duration-500"
+/>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                     <div className="absolute bottom-4 left-4 right-4 text-white">
                       <p className="text-sm">{member.description}</p>
