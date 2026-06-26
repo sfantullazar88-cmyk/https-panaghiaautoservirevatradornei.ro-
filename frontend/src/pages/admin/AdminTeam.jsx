@@ -56,10 +56,10 @@ const AdminTeam = () => {
       const data = await res.json();
 
       if (data.url) {
-        setForm((prev) => ({ ...prev, image_url: data.url }));
-      } else {
-        alert("Eroare la încărcarea pozei.");
-      }
+  setForm((prev) => ({ ...prev, image_url: data.url }));
+} else {
+  alert("Eroare la încărcarea pozei: " + JSON.stringify(data));
+}
     } catch (error) {
       console.error("Upload error:", error);
       alert("Nu s-a putut încărca poza.");
