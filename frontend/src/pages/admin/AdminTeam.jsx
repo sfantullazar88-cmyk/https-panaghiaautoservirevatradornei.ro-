@@ -21,8 +21,10 @@ const AdminTeam = () => {
 
   const token =
   localStorage.getItem("access_token") ||
+  localStorage.getItem("adminToken") ||
   localStorage.getItem("admin_token") ||
   localStorage.getItem("token");
+  console.log("ADMIN TEAM TOKEN:", token);
 
   const loadTeam = async () => {
     const res = await fetch(`${API_URL}/api/admin/team`, {
