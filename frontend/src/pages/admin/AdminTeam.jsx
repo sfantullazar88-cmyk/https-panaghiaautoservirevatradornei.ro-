@@ -13,7 +13,39 @@ const AdminTeam = () => {
   });
 
   const token = localStorage.getItem("admin_token");
+  const [uploading, setUploading] = useState(false);
 
+const uploadImage = async (file) => {
+  if (!file) return;
+
+  setUploading(true);
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const res = await fetch(`${API_URL}/api/admin/upload-image`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    const data = await res.json();
+
+    if (data.url) {
+      setForm({ ...form, image_url: data.url });
+    } else {
+      alert("Eroare la încărcarea pozei");
+    }
+  } catch (error) {
+    console.error("Upload error:", error);
+    alert("Nu s-a putut încărca poza");
+  }
+
+  setUploading(false);
+};
   const loadTeam = async () => {
     const res = await fetch(`${API_URL}/api/admin/team`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -82,7 +114,30 @@ const AdminTeam = () => {
             value={form.role}
             onChange={(e) => setForm({ ...form, role: e.target.value })}
           />
+<div className="md:col-span-2">
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Încarcă poză
+  </label>
 
+  <input
+    type="file"
+    accept="image/*"
+    className="border rounded-lg p-3 w-full"
+    onChange={(e) => uploadImage(e.target.files[0])}
+  />
+
+  {uploading && (
+    <p className="text-sm text-gray-500 mt-2">Se încarcă poza...</p>
+  )}
+
+  {form.image_url && (
+    <img
+      src={form.image_url}
+      alt="Preview"
+      className="mt-4 w-40 h-40 object-cover rounded-lg"
+    />
+  )}
+</div>
           <input
             className="border rounded-lg p-3 md:col-span-2"
             placeholder="Link poză"
