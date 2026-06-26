@@ -25,6 +25,7 @@ import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminOrders from "./pages/admin/AdminOrders";
 import AdminMenu from "./pages/admin/AdminMenu";
+import AdminTeam from './pages/admin/AdminTeam';
 import AdminDelivery from "./pages/admin/AdminDelivery";
 import AdminReviews from "./pages/admin/AdminReviews";
 import AdminSettings from "./pages/admin/AdminSettings";
@@ -252,9 +253,11 @@ function AppContent() {
           <Route index element={<AdminDashboard />} />
           <Route path="orders" element={<AdminOrders />} />
           <Route path="menu" element={<AdminMenu />} />
+          <Route path="team" element={<AdminTeam />} />
           <Route path="delivery" element={<AdminDelivery />} />
           <Route path="reviews" element={<AdminReviews />} />
           <Route path="settings" element={<AdminSettings />} />
+
         </Route>
 
         {/* Catch all */}
