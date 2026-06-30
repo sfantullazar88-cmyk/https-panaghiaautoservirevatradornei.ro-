@@ -164,7 +164,43 @@ export const adminApi = {
     method: 'PUT',
     body: JSON.stringify(menu),
   }),
-  
+    // Team
+  getTeam: () => authApiCall('/admin/team'),
+
+  createTeamMember: (member) => authApiCall('/admin/team', {
+    method: 'POST',
+    body: JSON.stringify(member),
+  }),
+
+  updateTeamMember: (memberId, member) => authApiCall(`/admin/team/${memberId}`, {
+    method: 'PUT',
+    body: JSON.stringify(member),
+  }),
+
+  deleteTeamMember: (memberId) => authApiCall(`/admin/team/${memberId}`, {
+    method: 'DELETE',
+  }),
+
+  uploadTeamImage: async (file) => {
+    const token = getToken();
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(`${API_URL}/api/admin/upload-image`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: 'Eroare upload' }));
+      throw new Error(error.detail || 'Eroare upload');
+    }
+
+    return response.json();
+  },
   // Reviews
   getReviews: (approved = null) => {
     const query = approved !== null ? `?approved=${approved}` : '';

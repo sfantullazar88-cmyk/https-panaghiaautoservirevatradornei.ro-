@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Plus, Pencil, Trash2, Upload, X } from "lucide-react";
-
-const API_URL = process.env.REACT_APP_BACKEND_URL;
+import { adminApi } from "../../services/adminApi";
 
 const emptyForm = {
   name: "",
@@ -19,19 +18,14 @@ const AdminTeam = () => {
   const [showForm, setShowForm] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  const token =
-  localStorage.getItem("access_token") ||
-  localStorage.getItem("adminToken") ||
-  localStorage.getItem("admin_token") ||
-  localStorage.getItem("token");
-  console.log("ADMIN TEAM TOKEN:", token);
-
   const loadTeam = async () => {
-    const res = await fetch(`${API_URL}/api/admin/team`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await res.json();
-    setMembers(data.members || []);
+    try {
+      const data = await adminApi.getTeam();
+      setMembers(data.members || []);
+    } catch (error) {
+      console.error("Eroare încărcare echipă:", error);
+      alert(error.message || "Nu s-a putut încărca echipa.");
+    }
   };
 
   useEffect(() => {
@@ -43,28 +37,17 @@ const AdminTeam = () => {
 
     setUploading(true);
 
-    const formData = new FormData();
-    formData.append("file", file);
-
     try {
-      const res = await fetch(`${API_URL}/api/admin/upload-image`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
-
-      const data = await res.json();
+      const data = await adminApi.uploadTeamImage(file);
 
       if (data.url) {
-  setForm((prev) => ({ ...prev, image_url: data.url }));
-} else {
-  alert("Eroare la încărcarea pozei: " + JSON.stringify(data));
-}
+        setForm((prev) => ({ ...prev, image_url: data.url }));
+      } else {
+        alert("Eroare la încărcarea pozei.");
+      }
     } catch (error) {
       console.error("Upload error:", error);
-      alert("Nu s-a putut încărca poza.");
+      alert(error.message || "Nu s-a putut încărca poza.");
     }
 
     setUploading(false);
@@ -76,28 +59,26 @@ const AdminTeam = () => {
       return;
     }
 
-    const url = editingId
-      ? `${API_URL}/api/admin/team/${editingId}`
-      : `${API_URL}/api/admin/team`;
+    const payload = {
+      ...form,
+      order: Number(form.order || 1),
+    };
 
-    const method = editingId ? "PUT" : "POST";
+    try {
+      if (editingId) {
+        await adminApi.updateTeamMember(editingId, payload);
+      } else {
+        await adminApi.createTeamMember(payload);
+      }
 
-    await fetch(url, {
-      method,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        ...form,
-        order: Number(form.order || 1),
-      }),
-    });
-
-    setForm(emptyForm);
-    setEditingId(null);
-    setShowForm(false);
-    loadTeam();
+      setForm(emptyForm);
+      setEditingId(null);
+      setShowForm(false);
+      loadTeam();
+    } catch (error) {
+      console.error("Eroare salvare membru:", error);
+      alert(error.message || "Nu s-a putut salva membrul.");
+    }
   };
 
   const editMember = (member) => {
@@ -109,6 +90,7 @@ const AdminTeam = () => {
       order: member.order || 1,
       active: member.active !== false,
     });
+
     setEditingId(member.id);
     setShowForm(true);
   };
@@ -116,12 +98,13 @@ const AdminTeam = () => {
   const deleteMember = async (id) => {
     if (!window.confirm("Sigur ștergi acest membru?")) return;
 
-    await fetch(`${API_URL}/api/admin/team/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    loadTeam();
+    try {
+      await adminApi.deleteTeamMember(id);
+      loadTeam();
+    } catch (error) {
+      console.error("Eroare ștergere membru:", error);
+      alert(error.message || "Nu s-a putut șterge membrul.");
+    }
   };
 
   const cancelForm = () => {
@@ -294,7 +277,7 @@ const AdminTeam = () => {
                     className="h-20 w-20 rounded-xl object-cover"
                   />
                 ) : (
-                  <div className="h-20 w-20 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400">
+                  <div className="h-20 w-20 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400 text-sm">
                     Fără poză
                   </div>
                 )}
