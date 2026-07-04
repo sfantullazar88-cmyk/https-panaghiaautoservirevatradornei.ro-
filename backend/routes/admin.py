@@ -424,7 +424,6 @@ async def get_team(current_user: dict = Depends(get_current_admin)):
     members = await db.team.find({}, {"_id": 0}).to_list(100)
     return {"members": members}
 
-
 @router.post("/team")
 async def create_team_member(
     member: dict,
@@ -436,9 +435,12 @@ async def create_team_member(
 
     await db.team.insert_one(member)
 
-    return member
+    member.pop("_id", None)
 
-
+    return {
+        "success": True,
+        "member": member
+    }
 @router.put("/team/{member_id}")
 async def update_team_member(
     member_id: str,
@@ -456,7 +458,9 @@ async def update_team_member(
 
     result.pop("_id", None)
 
-    return result
+    return {
+    "success": True
+}
 
 
 @router.delete("/team/{member_id}")
