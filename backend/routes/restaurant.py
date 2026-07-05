@@ -41,7 +41,16 @@ async def get_restaurant_info():
             "hero_image": "https://customer-assets.emergentagent.com/job_food-delivery-240/artifacts/25k2bpta_4.jpg"
         }
     return info
+# ============== PUBLIC TEAM ==============
 
+@router.get("/team", response_model=dict)
+async def get_public_team():
+    members = await db.team.find(
+        {"active": True},
+        {"_id": 0}
+    ).sort("order", 1).to_list(100)
+
+    return {"members": members}
 
 @router.put("/info", response_model=dict)
 async def update_restaurant_info(info: dict):

@@ -6,7 +6,7 @@ const Team = () => {
   const [teamMembers, setTeamMembers] = useState([]);
 
 useEffect(() => {
-  fetch(`${process.env.REACT_APP_BACKEND_URL}/api/admin/team`)
+  fetch(`${process.env.REACT_APP_BACKEND_URL}/api/restaurant/team`)
     .then((res) => res.json())
     .then((data) => {
       setTeamMembers(data.members || []);
