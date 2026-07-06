@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Phone, Mail, MapPin, Clock, Send, MessageCircle } from 'lucide-react';
 import { restaurantInfo } from '../data/mock';
+import { Helmet } from "react-helmet-async";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -29,6 +30,17 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-24">
+      <Helmet>
+  <title>Contact PanAghia | Autoservire & Delivery Vatra Dornei</title>
+  <meta
+    name="description"
+    content="Contactează PanAghia Autoservire & Delivery din Vatra Dornei pentru meniul zilei, comenzi, livrare la domiciliu și servicii de catering."
+  />
+  <link
+    rel="canonical"
+    href="https://www.panaghiaautoservirevatradornei.ro/contact"
+  />
+</Helmet>
       {/* Hero Section */}
       <section className="bg-[#D4A847] py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

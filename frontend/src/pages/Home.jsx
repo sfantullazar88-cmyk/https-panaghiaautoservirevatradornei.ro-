@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Star, UtensilsCrossed, Package, Phone, Clock, MapPin, ChefHat, Truck, Award } from 'lucide-react';
 import { menuApi, restaurantApi } from '../services/api';
+import { Helmet } from "react-helmet-async";
 
 const Home = () => {
   const [restaurantInfo, setRestaurantInfo] = useState(null);
@@ -19,7 +20,7 @@ const Home = () => {
           restaurantApi.getReviews(),
           menuApi.getDailyMenu()
         ]);
-        
+      
         setRestaurantInfo(infoRes);
         setPopularItems(itemsRes.slice(0, 4));
         setReviews(reviewsRes.slice(0, 3));
@@ -39,12 +40,23 @@ const Home = () => {
   const todayMenu = dailyMenu.find(d => d.day.toLowerCase() === todayCapitalized.toLowerCase());
 
   if (loading) {
-    return (
+  return (
+    <>
+      <Helmet>
+        <title>Autoservire Vatra Dornei | Meniul Zilei & Delivery | PanAghia</title>
+        <meta
+          name="description"
+          content="PanAghia Autoservire & Delivery Vatra Dornei – meniul zilei, mâncare gătită, preparate tradiționale, livrare la domiciliu și catering."
+        />
+        <link rel="canonical" href="https://www.panaghiaautoservirevatradornei.ro/" />
+      </Helmet>
+
       <div className="min-h-screen flex items-center justify-center" data-testid="home-loading">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#D4A847]"></div>
       </div>
-    );
-  }
+    </>
+  );
+}
 
   // Default values if API fails
   const info = restaurantInfo || {

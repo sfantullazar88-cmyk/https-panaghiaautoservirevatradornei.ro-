@@ -1,6 +1,8 @@
+
 import React, { useEffect, useState } from 'react';
 import { ChefHat, Heart, Award } from 'lucide-react';
 import { restaurantInfo } from '../data/mock';
+import { Helmet } from "react-helmet-async";
 
 const Team = () => {
   const [teamMembers, setTeamMembers] = useState([]);
@@ -13,9 +15,21 @@ useEffect(() => {
     })
     .catch((err) => console.error("Eroare încărcare echipă:", err));
 }, []);
-  return (
-    <div className="min-h-screen bg-gray-50 pt-24">
-      {/* Hero Section */}
+ return (
+  <div className="min-h-screen bg-gray-50 pt-24">
+    <Helmet>
+      <title>Echipa PanAghia | Autoservire & Delivery Vatra Dornei</title>
+      <meta
+        name="description"
+        content="Descoperă echipa PanAghia Autoservire & Delivery din Vatra Dornei, oamenii care pregătesc zilnic mâncare gătită cu grijă și pasiune."
+      />
+      <link
+        rel="canonical"
+        href="https://www.panaghiaautoservirevatradornei.ro/echipa"
+      />
+    </Helmet>
+
+    {/* Hero Section */}
       <section className="bg-[#D4A847] py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>

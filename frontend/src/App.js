@@ -10,6 +10,7 @@ import Team from "./pages/Team";
 import Contact from "./pages/Contact";
 import Order from "./pages/Order";
 import { messaging, getToken, onMessage } from "./firebase";
+import { HelmetProvider } from "react-helmet-async";
 
 // Legal pages imports
 import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
@@ -269,11 +270,13 @@ function AppContent() {
 
 function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
-    </BrowserRouter>
+    <HelmetProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </BrowserRouter>
+    </HelmetProvider>
   );
 }
 

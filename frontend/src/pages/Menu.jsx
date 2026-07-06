@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Plus, Star } from 'lucide-react';
 import { menuApi } from '../services/api';
+import { Helmet } from "react-helmet-async";
 
 const Menu = ({ onAddToCart }) => {
   const [categories, setCategories] = useState([]);
@@ -37,9 +38,19 @@ const Menu = ({ onAddToCart }) => {
 
   if (loading) {
     return (
+      <>
+  <Helmet>
+    <title>Meniul Zilei Vatra Dornei | Mâncare Gătită & Delivery | PanAghia</title>
+    <meta
+      name="description"
+      content="Vezi meniul PanAghia din Vatra Dornei: meniul zilei, ciorbe, feluri principale, garnituri, mâncare gătită și livrare la domiciliu."
+    />
+    <link rel="canonical" href="https://www.panaghiaautoservirevatradornei.ro/meniu" />
+  </Helmet>
       <div className="min-h-screen bg-gray-50 pt-24 flex items-center justify-center" data-testid="menu-loading">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#D4A847]"></div>
       </div>
+      </>
     );
   }
 
