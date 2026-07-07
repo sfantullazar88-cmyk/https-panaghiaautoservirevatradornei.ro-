@@ -67,9 +67,9 @@ const Home = () => {
     rating: 5,
     review_count: 0,
     schedule: { weekdays: "11:00 - 17:00", weekend: "Închis" },
-    hero_title: "Mancare gatita zilnic,",
-    hero_title2: "gustoasa si satioasa",
-    hero_subtitle: "Autoservire & delivery rapid in Vatra Dornei",
+   hero_title: "Mâncare gătită zilnic,",
+hero_title2: "gustoasă și sățioasă",
+hero_subtitle: "Meniul zilei, autoservire și livrare în Vatra Dornei",
     hero_image: "https://customer-assets.emergentagent.com/job_food-delivery-240/artifacts/25k2bpta_4.jpg"
   };
 
