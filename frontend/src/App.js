@@ -1,4 +1,6 @@
 import MeniulZileiVatraDornei from "./pages/MeniulZileiVatraDornei";
+import CateringVatraDornei from "./pages/CateringVatraDornei";
+import UndeSeManancaBineVatraDornei from "./pages/UndeSeManancaBineVatraDornei";
 import React, { useState, useEffect } from "react";
 import "./App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
@@ -165,7 +167,22 @@ function AppContent() {
     </PublicLayout>
   }
 />
-        
+   <Route
+  path="/catering-vatra-dornei"
+  element={
+    <PublicLayout cartItemCount={cartItemCount}>
+      <CateringVatraDornei />
+    </PublicLayout>
+  }
+/>    
+<Route
+  path="/unde-se-mananca-bine-in-vatra-dornei"
+  element={
+    <PublicLayout cartItemCount={cartItemCount}>
+      <UndeSeManancaBineVatraDornei />
+    </PublicLayout>
+  }
+/> 
         <Route
           path="/echipa"
           element={
