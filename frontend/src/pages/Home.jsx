@@ -326,6 +326,66 @@ hero_subtitle: "Meniul zilei, autoservire și livrare în Vatra Dornei",
           </div>
         </div>
       </section>
+            {/* Linkuri interne SEO locale */}
+      <section className="py-14 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10">
+            <h2
+              className="text-3xl md:text-4xl font-bold text-gray-900 mb-4"
+              style={{ fontFamily: 'Playfair Display, serif' }}
+            >
+              Descoperă PanAghia în Vatra Dornei
+            </h2>
+
+            <p className="text-gray-600 max-w-3xl mx-auto">
+              Descoperă meniul zilei, serviciile de catering și un loc unde
+              poți mânca bine în Vatra Dornei.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+            <Link
+              to="/meniul-zilei-vatra-dornei"
+              className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow"
+            >
+              <h3 className="text-xl font-bold text-gray-900 mb-3">
+                Meniul zilei în Vatra Dornei
+              </h3>
+              <p className="text-gray-600">
+                Vezi informații despre meniul zilei și mâncarea gătită zilnic.
+              </p>
+            </Link>
+
+            <Link
+              to="/catering-vatra-dornei"
+              className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow"
+            >
+              <h3 className="text-xl font-bold text-gray-900 mb-3">
+                Catering în Vatra Dornei
+              </h3>
+              <p className="text-gray-600">
+                Descoperă opțiunile de catering pentru mese de familie,
+                parastase, pomeni și evenimente restrânse.
+              </p>
+            </Link>
+
+            <Link
+              to="/unde-se-mananca-bine-in-vatra-dornei"
+              className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow"
+            >
+              <h3 className="text-xl font-bold text-gray-900 mb-3">
+                Unde se mănâncă bine în Vatra Dornei?
+              </h3>
+              <p className="text-gray-600">
+                Descoperă PanAghia dacă îți dorești mâncare gătită, gustoasă
+                și sățioasă în Vatra Dornei.
+              </p>
+            </Link>
+
+          </div>
+        </div>
+      </section>
     </div>
   );
 };
