@@ -6,10 +6,10 @@ const MeniulZileiVatraDornei = () => {
   return (
     <div className="min-h-screen bg-gray-50 pt-24">
       <Helmet>
-        <title>Meniul Zilei Vatra Dornei | PanAghia Autoservire</title>
+        <title>Meniul Zilei Vatra Dornei | Mâncare Gătită | PanAghia</title>
         <meta
           name="description"
-          content="Meniul zilei în Vatra Dornei la PanAghia Autoservire & Delivery: mâncare gătită zilnic, ciorbe, feluri principale, garnituri și livrare la domiciliu."
+          content="Meniul zilei în Vatra Dornei la PanAghia: mâncare gătită zilnic, ciorbe, feluri principale, garnituri, preparate tradiționale, la pachet sau cu livrare."
         />
         <link
           rel="canonical"
@@ -23,33 +23,58 @@ const MeniulZileiVatraDornei = () => {
             className="text-4xl md:text-5xl font-bold text-white mb-4"
             style={{ fontFamily: "Playfair Display, serif" }}
           >
-            Meniul Zilei în Vatra Dornei
+            Meniul zilei în Vatra Dornei
           </h1>
           <p className="text-white/90 text-lg max-w-3xl mx-auto">
-            La PanAghia Autoservire & Delivery pregătim zilnic mâncare gătită,
-            proaspătă și sățioasă, potrivită pentru prânz, comandă la pachet sau
+            La PanAghia Autoservire & Delivery găsești mâncare gătită zilnic,
+            potrivită pentru prânz, servire rapidă, comandă la pachet sau
             livrare în Vatra Dornei.
           </p>
         </div>
       </section>
 
       <section className="py-14 bg-white">
-        <div className="max-w-5xl mx-auto px-4 space-y-6 text-gray-700 text-lg leading-relaxed">
+        <div className="max-w-5xl mx-auto px-4 space-y-7 text-gray-700 text-lg leading-relaxed">
           <p>
             Dacă ești în căutarea unui <strong>meniu al zilei în Vatra Dornei</strong>,
-            PanAghia îți oferă variante gustoase de mâncare gătită ca acasă:
-            ciorbe, feluri principale, garnituri și preparate tradiționale.
+            PanAghia îți oferă variante de mâncare gătită, pregătită zilnic,
+            cu preparate potrivite pentru o masă caldă și sățioasă.
           </p>
 
           <p>
-            Meniul nostru este potrivit pentru cei care vor o masă caldă la prânz,
-            pentru angajați, turiști, familii sau persoane care preferă mâncarea
-            gătită, proaspătă și servită rapid.
+            Meniul zilei poate include ciorbe, feluri principale, garnituri și
+            preparate tradiționale, în funcție de disponibilitatea zilei.
+            Este o alegere bună pentru localnici, angajați, turiști sau familii
+            care vor mâncare bună fără timp pierdut.
           </p>
 
+          <h2 className="text-2xl font-bold text-gray-900">
+            Mâncare gătită pentru prânz în Vatra Dornei
+          </h2>
+
           <p>
-            Poți servi masa la autoservire, poți comanda la pachet sau poți verifica
-            opțiunile disponibile pentru livrare în Vatra Dornei.
+            PanAghia este potrivită pentru cei care caută o autoservire în Vatra
+            Dornei, o masă caldă la prânz, mâncare la pachet sau opțiuni de
+            livrare. Preparatele sunt gândite pentru gust, sațietate și servire
+            rapidă.
+          </p>
+
+          <h2 className="text-2xl font-bold text-gray-900">
+            Ce găsești la PanAghia
+          </h2>
+
+          <ul className="list-disc pl-6 space-y-2">
+            <li>meniul zilei în Vatra Dornei;</li>
+            <li>mâncare gătită zilnic;</li>
+            <li>ciorbe, feluri principale și garnituri;</li>
+            <li>preparate pentru servire la autoservire sau la pachet;</li>
+            <li>opțiuni pentru livrare și comenzi telefonice.</li>
+          </ul>
+
+          <p>
+            Pentru meniul disponibil în ziua curentă, verifică pagina de meniu
+            sau contactează-ne telefonic. Disponibilitatea preparatelor poate
+            varia în funcție de zi și de comenzile primite.
           </p>
 
           <div className="pt-6 flex flex-col sm:flex-row gap-4">
@@ -61,8 +86,15 @@ const MeniulZileiVatraDornei = () => {
             </Link>
 
             <Link
-              to="/contact"
+              to="/unde-se-mananca-bine-in-vatra-dornei"
               className="border border-[#D4A847] text-[#D4A847] px-6 py-3 rounded-lg font-semibold text-center"
+            >
+              Unde se mănâncă bine în Vatra Dornei
+            </Link>
+
+            <Link
+              to="/contact"
+              className="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold text-center"
             >
               Contact pentru comenzi
             </Link>
