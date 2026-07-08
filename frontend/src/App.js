@@ -1,3 +1,4 @@
+import MeniulZileiVatraDornei from "./pages/MeniulZileiVatraDornei";
 import React, { useState, useEffect } from "react";
 import "./App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
@@ -155,7 +156,16 @@ function AppContent() {
               <Menu onAddToCart={addToCart} />
             </PublicLayout>
           }
-        />
+                  />
+          <Route
+  path="/meniul-zilei-vatra-dornei"
+  element={
+    <PublicLayout cartItemCount={cartItemCount}>
+      <MeniulZileiVatraDornei />
+    </PublicLayout>
+  }
+/>
+        
         <Route
           path="/echipa"
           element={
