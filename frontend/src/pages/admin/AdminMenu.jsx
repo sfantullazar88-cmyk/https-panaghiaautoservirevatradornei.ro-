@@ -32,7 +32,7 @@ const AdminMenu = () => {
     try {
       const [categoriesData, itemsData, dailyData] = await Promise.all([
         menuApi.getCategories(),
-        menuApi.getItems(),
+        menuApi.getItems(null, false, true),
         menuApi.getDailyMenu()
       ]);
       setCategories(categoriesData);

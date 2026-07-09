@@ -28,14 +28,18 @@ export const menuApi = {
   getCategories: () => apiCall('/menu/categories'),
   
   // Get all menu items
-  getItems: (categoryId = null, popularOnly = false) => {
-    let endpoint = '/menu/items';
-    const params = new URLSearchParams();
-    if (categoryId) params.append('category_id', categoryId);
-    if (popularOnly) params.append('popular_only', 'true');
-    if (params.toString()) endpoint += `?${params.toString()}`;
-    return apiCall(endpoint);
-  },
+ getItems: (categoryId = null, popularOnly = false, includeUnavailable = false) => {
+  let endpoint = '/menu/items';
+  const params = new URLSearchParams();
+
+  if (categoryId) params.append('category_id', categoryId);
+  if (popularOnly) params.append('popular_only', 'true');
+  if (includeUnavailable) params.append('include_unavailable', 'true');
+
+  if (params.toString()) endpoint += `?${params.toString()}`;
+
+  return apiCall(endpoint);
+},
   
   // Get single menu item
   getItem: (itemId) => apiCall(`/menu/items/${itemId}`),

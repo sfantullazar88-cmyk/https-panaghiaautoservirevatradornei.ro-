@@ -66,25 +66,39 @@ async def delete_category(category_id: str):
 # ============== MENU ITEMS ==============
 
 @router.get("/items", response_model=List[dict])
-async def get_menu_items(category_id: str = None, popular_only: bool = False):
-    """Get all menu items, optionally filtered by category"""
-    query = {"is_available": True}
+async def get_menu_items(
+    category_id: str = None,
+    popular_only: bool = False,
+    include_unavailable: bool = False
+):
+    """Get menu items, optionally including unavailable items"""
+
+    query = {}
+
+    # Pentru site-ul public, afișăm doar produsele disponibile
+    if not include_unavailable:
+        query["is_available"] = True
+
     if category_id:
         query["category_id"] = category_id
+
     if popular_only:
         query["is_popular"] = True
-    
-    items = await db.menu_items.find(query, {"_id": 0}).to_list(1000)
-    
+
+    items = await db.menu_items.find(
+        query,
+        {"_id": 0}
+    ).to_list(1000)
+
     # Convert datetime strings if needed
     for item in items:
-        if isinstance(item.get('created_at'), str):
-            item['created_at'] = datetime.fromisoformat(item['created_at'])
-        if isinstance(item.get('updated_at'), str):
-            item['updated_at'] = datetime.fromisoformat(item['updated_at'])
-    
-    return items
+        if isinstance(item.get("created_at"), str):
+            item["created_at"] = datetime.fromisoformat(item["created_at"])
 
+        if isinstance(item.get("updated_at"), str):
+            item["updated_at"] = datetime.fromisoformat(item["updated_at"])
+
+    return items
 
 @router.get("/items/{item_id}", response_model=dict)
 async def get_menu_item(item_id: str):
