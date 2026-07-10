@@ -1,6 +1,7 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from typing import List
 from datetime import datetime, timezone
+from routes.auth import get_current_admin
 
 router = APIRouter(prefix="/menu", tags=["Menu"])
 
@@ -24,7 +25,10 @@ async def get_categories():
 
 
 @router.post("/categories", response_model=dict)
-async def create_category(category: dict):
+async def create_category(
+    category: dict,
+    current_user: dict = Depends(get_current_admin)
+):
     """Create a new menu category"""
     from models import MenuCategory, MenuCategoryCreate
     
@@ -37,7 +41,11 @@ async def create_category(category: dict):
 
 
 @router.put("/categories/{category_id}", response_model=dict)
-async def update_category(category_id: str, category: dict):
+async def update_category(
+    category_id: str,
+    category: dict,
+    current_user: dict = Depends(get_current_admin)
+):
     """Update a menu category"""
     result = await db.menu_categories.find_one_and_update(
         {"id": category_id},
@@ -52,7 +60,10 @@ async def update_category(category_id: str, category: dict):
 
 
 @router.delete("/categories/{category_id}")
-async def delete_category(category_id: str):
+async def delete_category(
+    category_id: str,
+    current_user: dict = Depends(get_current_admin)
+):
     """Delete a menu category (soft delete)"""
     result = await db.menu_categories.update_one(
         {"id": category_id},
@@ -110,7 +121,10 @@ async def get_menu_item(item_id: str):
 
 
 @router.post("/items", response_model=dict)
-async def create_menu_item(item: dict):
+async def create_menu_item(
+    item: dict,
+    current_user: dict = Depends(get_current_admin)
+):
     """Create a new menu item"""
     from models import MenuItem, MenuItemCreate
     
@@ -127,7 +141,11 @@ async def create_menu_item(item: dict):
 
 
 @router.put("/items/{item_id}", response_model=dict)
-async def update_menu_item(item_id: str, item: dict):
+async def update_menu_item(
+    item_id: str,
+    item: dict,
+    current_user: dict = Depends(get_current_admin)
+):
     """Update a menu item"""
     item['updated_at'] = datetime.now(timezone.utc).isoformat()
     
@@ -144,7 +162,10 @@ async def update_menu_item(item_id: str, item: dict):
 
 
 @router.delete("/items/{item_id}")
-async def delete_menu_item(item_id: str):
+async def delete_menu_item(
+    item_id: str,
+    current_user: dict = Depends(get_current_admin)
+):
     """Delete a menu item (soft delete)"""
     result = await db.menu_items.update_one(
         {"id": item_id},
@@ -174,7 +195,10 @@ async def get_daily_menu_by_day(day: str):
 
 
 @router.post("/daily", response_model=dict)
-async def create_daily_menu(menu: dict):
+async def create_daily_menu(
+    menu: dict,
+    current_user: dict = Depends(get_current_admin)
+):
     """Create a new daily menu entry"""
     from models import DailyMenu, DailyMenuCreate
     
@@ -187,7 +211,11 @@ async def create_daily_menu(menu: dict):
 
 
 @router.put("/daily/{menu_id}", response_model=dict)
-async def update_daily_menu(menu_id: str, menu: dict):
+async def update_daily_menu(
+    menu_id: str,
+    menu: dict,
+    current_user: dict = Depends(get_current_admin)
+):
     """Update a daily menu entry"""
     result = await db.daily_menu.find_one_and_update(
         {"id": menu_id},
@@ -202,7 +230,10 @@ async def update_daily_menu(menu_id: str, menu: dict):
 
 
 @router.delete("/daily/{menu_id}")
-async def delete_daily_menu(menu_id: str):
+async def delete_daily_menu(
+    menu_id: str,
+    current_user: dict = Depends(get_current_admin)
+):
     """Delete a daily menu entry"""
     result = await db.daily_menu.update_one(
         {"id": menu_id},

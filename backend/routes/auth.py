@@ -89,7 +89,12 @@ class ChangePasswordRequest(BaseModel):
 # ============== HELPER FUNCTIONS ==============
 
 def get_jwt_secret():
-    return os.environ.get('JWT_SECRET_KEY', 'fallback-secret-key')
+    secret = os.environ.get("JWT_SECRET_KEY")
+
+    if not secret:
+        raise RuntimeError("JWT_SECRET_KEY nu este configurată în Render")
+
+    return secret
 
 def get_jwt_algorithm():
     return os.environ.get('JWT_ALGORITHM', 'HS256')
@@ -387,12 +392,11 @@ async def request_password_reset(request: PasswordResetRequest):
     
     # In production, send email here
     # For now, log the token (remove in production!)
-    print(f"[PASSWORD RESET] Token for {email}: {reset_token}")
+   
     
     return {
-        "message": "Dacă emailul există, veți primi instrucțiuni de resetare",
-        "debug_token": reset_token  # Remove in production!
-    }
+    "message": "Dacă emailul există, veți primi instrucțiuni de resetare"
+}
 
 
 @router.post("/password-reset/confirm")
