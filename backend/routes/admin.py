@@ -290,12 +290,25 @@ async def delete_category_admin(
     category_id: str,
     current_user: dict = Depends(get_current_admin)
 ):
-    """Delete a menu category (admin only)"""
-    result = await db.menu_categories.delete_one({"id": category_id})
-    if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Categorie negăsită")
-    return {"message": "Categorie ștearsă cu succes"}
+    """Mark a category as inactive instead of deleting it permanently"""
 
+    result = await db.menu_categories.update_one(
+        {"id": category_id},
+        {
+            "$set": {
+                "is_active": False,
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+                "updated_by": current_user["email"]
+            }
+        }
+    )
+
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Categorie negăsită")
+
+    return {
+        "message": "Categoria a fost marcată ca inactivă"
+    }
 
 @router.post("/menu/items")
 async def create_item_admin(
@@ -346,13 +359,25 @@ async def delete_item_admin(
     item_id: str,
     current_user: dict = Depends(get_current_admin)
 ):
-    """Delete a menu item (admin only)"""
-    result = await db.menu_items.delete_one({"id": item_id})
-    if result.deleted_count == 0:
+    """Mark a menu item as unavailable instead of deleting it permanently"""
+
+    result = await db.menu_items.update_one(
+        {"id": item_id},
+        {
+            "$set": {
+                "is_available": False,
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+                "updated_by": current_user["email"]
+            }
+        }
+    )
+
+    if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Produs negăsit")
-    return {"message": "Produs șters cu succes"}
 
-
+    return {
+        "message": "Produsul a fost marcat ca indisponibil"
+    }
 @router.put("/menu/daily/{menu_id}")
 async def update_daily_menu_admin(
     menu_id: str,
@@ -468,14 +493,25 @@ async def delete_team_member(
     member_id: str,
     current_user: dict = Depends(get_current_admin)
 ):
-    result = await db.team.delete_one({"id": member_id})
+    """Mark a team member as inactive instead of deleting permanently"""
 
-    if result.deleted_count == 0:
+    result = await db.team.update_one(
+        {"id": member_id},
+        {
+            "$set": {
+                "active": False,
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+                "updated_by": current_user["email"]
+            }
+        }
+    )
+
+    if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Membru negăsit")
 
-    return {"message": "Membru șters"}
-# ============== IMAGE UPLOAD / CLOUDINARY ==============
-
+    return {
+        "message": "Membrul a fost marcat ca inactiv"
+    }
 @router.post("/upload-image")
 async def upload_image_admin(
     file: UploadFile = File(...),
