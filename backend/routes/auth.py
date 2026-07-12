@@ -515,7 +515,7 @@ async def verify_otp(
         raise HTTPException(status_code=400, detail="Cod OTP expirat")
 
     user = await db.admin_users.find_one({
-        "email": request.email.lower()
+        "email": otp_data.email.lower()
     })
 
     if not user:
