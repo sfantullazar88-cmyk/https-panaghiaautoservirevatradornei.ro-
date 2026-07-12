@@ -8,14 +8,15 @@ import os
 import secrets
 import hashlib
 import requests
-
 from fastapi import APIRouter, HTTPException, Depends, Request, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, EmailStr, Field
 import jwt
 from passlib.context import CryptContext
+from rate_limit import limiter
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
+
 
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -165,9 +166,24 @@ async def send_otp_email(email: str, code: str):
     from_email = os.environ.get("OTP_FROM_EMAIL", "onboarding@resend.dev")
 
     if not api_key:
-        print(f"[OTP] Cod pentru {email}: {code}")
-        return
+        raise RuntimeError(
+            "RESEND_API_KEY nu este configurată pentru trimiterea OTP"
+        )
 
+    response = requests.post(
+        "https://api.resend.com/emails",
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+        json={
+            "from": from_email,
+            "to": email,
+            "subject": "Cod conectare Panaghia Admin",
+            "html": f"<p>Codul tău de conectare este:</p><h2>{code}</h2><p>Codul expiră în 10 minute.</p>",
+        },
+        timeout=10,
+    )
     response = requests.post( 
     "https://api.resend.com/emails",
     headers={
@@ -251,9 +267,10 @@ async def get_current_admin(current_user: dict = Depends(get_current_user)):
 # ============== ROUTES ==============
 
 @router.post("/login", response_model=LoginResponse)
-async def login(request: LoginRequest):
+@limiter.limit("5/minute")
+async def login(request: Request, login_data: LoginRequest):
     """Admin login endpoint"""
-    email = request.email.lower()
+    email = login_data.email.lower()
     
     # Check rate limiting
     if not check_rate_limit(email):
@@ -276,7 +293,7 @@ async def login(request: LoginRequest):
         raise HTTPException(status_code=423, detail="Contul este blocat temporar")
     
     # Verify password
-    if not verify_password(request.password, user["hashed_password"]):
+    if not verify_password(login_data.password, user["hashed_password"]):
         record_failed_attempt(email)
         
         # Update failed attempts in DB
@@ -368,9 +385,13 @@ async def refresh_token(request: TokenRefreshRequest):
 
 
 @router.post("/password-reset/request")
-async def request_password_reset(request: PasswordResetRequest):
+@limiter.limit("3/hour")
+async def request_password_reset(
+    request: Request,
+    reset_data: PasswordResetRequest
+):
     """Request password reset - sends token"""
-    email = request.email.lower()
+    email = reset_data.email.lower()
     user = await db.admin_users.find_one({"email": email})
     
     # Always return success to prevent email enumeration
@@ -400,9 +421,13 @@ async def request_password_reset(request: PasswordResetRequest):
 
 
 @router.post("/password-reset/confirm")
-async def confirm_password_reset(request: PasswordResetConfirm):
+@limiter.limit("5/hour")
+async def confirm_password_reset(
+    request: Request,
+    reset_data: PasswordResetConfirm
+):
     """Confirm password reset with token"""
-    hashed_token = hash_reset_token(request.token)
+    hashed_token = hash_reset_token(reset_data.token)
     
     # Find valid token
     token_doc = await db.password_reset_tokens.find_one({
@@ -419,11 +444,11 @@ async def confirm_password_reset(request: PasswordResetConfirm):
         raise HTTPException(status_code=400, detail="Token expirat")
     
     # Validate password strength
-    if len(request.new_password) < 8:
+    if len(reset_data.new_password) < 8:
         raise HTTPException(status_code=400, detail="Parola trebuie să aibă minim 8 caractere")
     
     # Update password
-    new_hash = hash_password(request.new_password)
+    new_hash = hash_password(reset_data.new_password)
     await db.admin_users.update_one(
         {"email": token_doc["email"]},
         {"$set": {"hashed_password": new_hash}}
@@ -451,11 +476,11 @@ async def change_password(
         raise HTTPException(status_code=400, detail="Parola actuală incorectă")
     
     # Validate new password
-    if len(request.new_password) < 8:
+    if len(reset_data.new_password) < 8:
         raise HTTPException(status_code=400, detail="Parola nouă trebuie să aibă minim 8 caractere")
     
     # Update password
-    new_hash = hash_password(request.new_password)
+    new_hash = hash_password(reset_data.new_password)
     await db.admin_users.update_one(
         {"email": current_user["email"]},
         {"$set": {"hashed_password": new_hash}}
@@ -470,10 +495,14 @@ async def get_current_user_info(current_user: dict = Depends(get_current_admin))
     return current_user
 
 @router.post("/verify-otp", response_model=LoginResponse)
-async def verify_otp(request: OTPVerifyRequest):
+@limiter.limit("5/minute")
+async def verify_otp(
+    request: Request,
+    otp_data: OTPVerifyRequest
+):
     otp_doc = await db.otp_codes.find_one({
-        "email": request.email.lower(),
-        "code": request.code,
+        "email": otp_data.email.lower(),
+        "code": otp_data.code,
         "used": False
     })
 

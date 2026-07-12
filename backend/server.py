@@ -9,6 +9,9 @@ from pydantic import BaseModel, Field, ConfigDict
 from typing import List
 import uuid
 from datetime import datetime, timezone
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from rate_limit import limiter
 
 # Import routes
 from routes import menu, orders, restaurant, auth, admin, payments, zoho, notifications
@@ -38,7 +41,18 @@ app = FastAPI(
     description="API for Panaghia Autoservire Vatra Dornei",
     version="2.0.0"
 )
+app.state.limiter = limiter
 
+app.add_exception_handler(
+    RateLimitExceeded,
+    _rate_limit_exceeded_handler
+)
+
+
+app.add_exception_handler(
+    RateLimitExceeded,
+    _rate_limit_exceeded_handler
+)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
