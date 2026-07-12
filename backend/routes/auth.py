@@ -432,11 +432,11 @@ async def confirm_password_reset(
         raise HTTPException(status_code=400, detail="Token expirat")
     
     # Validate password strength
-    if len(reset_data.new_password) < 8:
+    if len(request.new_password) < 8:
         raise HTTPException(status_code=400, detail="Parola trebuie să aibă minim 8 caractere")
     
     # Update password
-    new_hash = hash_password(reset_data.new_password)
+    new_hash = hash_password(request.new_password)
     await db.admin_users.update_one(
         {"email": token_doc["email"]},
         {"$set": {"hashed_password": new_hash}}
