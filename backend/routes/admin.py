@@ -518,8 +518,73 @@ async def upload_image_admin(
     current_user: dict = Depends(get_current_admin)
 ):
     import os
+    import io
     import cloudinary
     import cloudinary.uploader
+    from PIL import Image, UnidentifiedImageError
+
+    MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 MB
+
+    ALLOWED_CONTENT_TYPES = {
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+    }
+
+    ALLOWED_FORMATS = {
+        "JPEG",
+        "PNG",
+        "WEBP",
+    }
+
+    # 1. Verificăm tipul declarat de browser
+    if file.content_type not in ALLOWED_CONTENT_TYPES:
+        raise HTTPException(
+            status_code=400,
+            detail="Sunt permise doar imagini JPG, JPEG, PNG sau WEBP."
+        )
+
+    # 2. Citim conținutul și verificăm dimensiunea reală
+    contents = await file.read()
+
+    if not contents:
+        raise HTTPException(
+            status_code=400,
+            detail="Fișierul este gol."
+        )
+
+    if len(contents) > MAX_FILE_SIZE:
+        raise HTTPException(
+            status_code=413,
+            detail="Imaginea este prea mare. Dimensiunea maximă este 5 MB."
+        )
+
+    # 3. Verificăm dacă fișierul este într-adevăr o imagine validă
+    try:
+        with Image.open(io.BytesIO(contents)) as image:
+            image.verify()
+
+        with Image.open(io.BytesIO(contents)) as image:
+            image_format = image.format
+
+        if image_format not in ALLOWED_FORMATS:
+            raise HTTPException(
+                status_code=400,
+                detail="Formatul real al imaginii nu este permis."
+            )
+
+    except UnidentifiedImageError:
+        raise HTTPException(
+            status_code=400,
+            detail="Fișierul nu este o imagine validă."
+        )
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(
+            status_code=400,
+            detail="Imaginea este deteriorată sau nu poate fi verificată."
+        )
 
     cloudinary.config(
         cloud_name=os.environ.get("CLOUDINARY_CLOUD_NAME"),
@@ -530,13 +595,17 @@ async def upload_image_admin(
 
     try:
         result = cloudinary.uploader.upload(
-            file.file,
-            folder="panaghia/team"
+            io.BytesIO(contents),
+            folder="panaghia/team",
+            resource_type="image"
         )
 
         return {
             "url": result.get("secure_url")
         }
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Eroare upload imagine: {str(e)}")
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail="Eroare la încărcarea imaginii."
+        )

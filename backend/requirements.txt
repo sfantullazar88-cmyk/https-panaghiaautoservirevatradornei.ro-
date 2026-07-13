@@ -125,3 +125,4 @@ stripe
 firebase-admin
 cloudinary
 slowapi
+Pillow
