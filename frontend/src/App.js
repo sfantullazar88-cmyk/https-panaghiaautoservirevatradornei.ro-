@@ -25,6 +25,7 @@ import GDPRConsent from "./pages/legal/GDPRConsent";
 // Admin imports
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import AdminLogin from "./pages/admin/AdminLogin";
+import ResetPassword from "./pages/ResetPassword";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminOrders from "./pages/admin/AdminOrders";
@@ -270,6 +271,10 @@ function AppContent() {
 
         {/* Admin Routes */}
         <Route path="/admin/login" element={<AdminLogin />} />
+        <Route
+  path="/admin/reset-password"
+  element={<ResetPassword />}
+/>
         <Route
           path="/admin"
           element={

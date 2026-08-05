@@ -1,13 +1,23 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+ import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
+
 import { authApi } from '../services/adminApi';
 
 const AuthContext = createContext(null);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
+
   if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
+    throw new Error(
+      'useAuth trebuie folosit în interiorul AuthProvider'
+    );
   }
+
   return context;
 };
 
@@ -16,17 +26,55 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const clearStoredAuth = () => {
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('adminUser');
+    setUser(null);
+  };
+
+  const saveAuthentication = (response) => {
+    if (
+      !response?.access_token ||
+      !response?.refresh_token ||
+      !response?.user
+    ) {
+      throw new Error(
+        'Răspunsul de autentificare este incomplet.'
+      );
+    }
+
+    localStorage.setItem(
+      'adminToken',
+      response.access_token
+    );
+
+    localStorage.setItem(
+      'refreshToken',
+      response.refresh_token
+    );
+
+    localStorage.setItem(
+      'adminUser',
+      JSON.stringify(response.user)
+    );
+
+    setUser(response.user);
+  };
+
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
     const savedUser = localStorage.getItem('adminUser');
 
     if (token && savedUser) {
       try {
-        setUser(JSON.parse(savedUser));
-      } catch (e) {
-        localStorage.removeItem('adminToken');
-        localStorage.removeItem('adminUser');
+        const parsedUser = JSON.parse(savedUser);
+        setUser(parsedUser);
+      } catch (err) {
+        clearStoredAuth();
       }
+    } else {
+      clearStoredAuth();
     }
 
     setLoading(false);
@@ -34,67 +82,83 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     setError(null);
+
     try {
-      const response = await authApi.login(email, password);
+      const response = await authApi.login(
+        email.trim().toLowerCase(),
+        password
+      );
 
       if (!response.otp_required) {
-        localStorage.setItem('adminToken', response.access_token);
-        localStorage.setItem('refreshToken', response.refresh_token);
-        localStorage.setItem('adminUser', JSON.stringify(response.user));
-        setUser(response.user);
+        saveAuthentication(response);
       }
 
       return response;
     } catch (err) {
-      setError(err.message);
-      throw err;
+      const message =
+        err?.message || 'Eroare la autentificare';
+
+      setError(message);
+      throw new Error(message);
     }
   };
 
   const verifyOtp = async (email, code) => {
     setError(null);
+
     try {
-      const response = await authApi.verifyOtp(email, code);
+      const response = await authApi.verifyOtp(
+        email.trim().toLowerCase(),
+        code.trim()
+      );
 
-      localStorage.setItem('adminToken', response.access_token);
-      localStorage.setItem('refreshToken', response.refresh_token);
-      localStorage.setItem('adminUser', JSON.stringify(response.user));
+      saveAuthentication(response);
 
-      setUser(response.user);
       return response;
     } catch (err) {
-      setError(err.message);
-      throw err;
+      const message =
+        err?.message || 'Codul OTP nu a putut fi verificat';
+
+      setError(message);
+      throw new Error(message);
     }
   };
 
   const logout = async () => {
     try {
-      await authApi.logout();
-    } catch (e) {}
+      const token = localStorage.getItem('adminToken');
 
-    localStorage.removeItem('adminToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('adminUser');
-    setUser(null);
+      if (token) {
+        await authApi.logout();
+      }
+    } catch (err) {
+      // Deconectarea locală continuă chiar dacă serverul nu răspunde.
+    } finally {
+      clearStoredAuth();
+      setError(null);
+    }
   };
 
-  const refreshToken = async () => {
-    const refresh = localStorage.getItem('refreshToken');
+  const refreshAccessToken = async () => {
+    const storedRefreshToken =
+      localStorage.getItem('refreshToken');
 
-    if (!refresh) {
-      logout();
-      return;
+    if (!storedRefreshToken) {
+      clearStoredAuth();
+      return null;
     }
 
     try {
-      const response = await authApi.refresh(refresh);
-      localStorage.setItem('adminToken', response.access_token);
-      localStorage.setItem('refreshToken', response.refresh_token);
-      localStorage.setItem('adminUser', JSON.stringify(response.user));
-      setUser(response.user);
-    } catch (e) {
-      logout();
+      const response = await authApi.refresh(
+        storedRefreshToken
+      );
+
+      saveAuthentication(response);
+
+      return response;
+    } catch (err) {
+      clearStoredAuth();
+      return null;
     }
   };
 
@@ -102,11 +166,11 @@ export const AuthProvider = ({ children }) => {
     user,
     loading,
     error,
-    isAuthenticated: !!user,
+    isAuthenticated: Boolean(user),
     login,
     verifyOtp,
     logout,
-    refreshToken,
+    refreshToken: refreshAccessToken,
   };
 
   return (
