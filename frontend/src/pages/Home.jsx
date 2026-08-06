@@ -282,6 +282,115 @@ hero_subtitle: "Meniul zilei, autoservire și livrare în Vatra Dornei",
           </div>
         </section>
       )}
+{/* Google Maps Location Section */}
+<section
+  className="py-16 bg-white"
+  data-testid="google-maps-location-section"
+>
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="text-center mb-10">
+      <span className="text-[#D4A847] font-medium">
+        Locația noastră
+      </span>
+
+      <h2
+        className="text-3xl md:text-4xl font-bold text-gray-900 mt-2"
+        style={{ fontFamily: 'Playfair Display, serif' }}
+      >
+        Ne găsiți ușor în Vatra Dornei
+      </h2>
+
+      <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
+        Vă așteptăm la PanAghia Autoservire & Delivery,
+        pe Strada Dornelor nr. 10, Vatra Dornei.
+      </p>
+    </div>
+
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+      {/* Informații restaurant */}
+      <div className="bg-[#FFF8E7] rounded-2xl p-7 shadow-sm">
+        <div className="flex items-start gap-4 mb-6">
+          <div className="w-12 h-12 bg-[#D4A847]/15 rounded-full flex items-center justify-center flex-shrink-0">
+            <MapPin className="w-6 h-6 text-[#D4A847]" />
+          </div>
+
+          <div>
+            <h3 className="text-xl font-bold text-gray-900">
+              PanAghia Autoservire
+            </h3>
+
+            <p className="text-gray-600 mt-1">
+              Strada Dornelor nr. 10
+              <br />
+              Vatra Dornei, Suceava
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-start gap-4 mb-6">
+          <div className="w-12 h-12 bg-[#D4A847]/15 rounded-full flex items-center justify-center flex-shrink-0">
+            <Phone className="w-6 h-6 text-[#D4A847]" />
+          </div>
+
+          <div>
+            <h3 className="font-semibold text-gray-900">
+              Telefon
+            </h3>
+
+            <a
+              href="tel:0746254162"
+              className="text-gray-600 hover:text-[#D4A847] transition-colors"
+            >
+              0746 254 162
+            </a>
+          </div>
+        </div>
+
+        <div className="flex items-start gap-4 mb-7">
+          <div className="w-12 h-12 bg-[#D4A847]/15 rounded-full flex items-center justify-center flex-shrink-0">
+            <Clock className="w-6 h-6 text-[#D4A847]" />
+          </div>
+
+          <div>
+            <h3 className="font-semibold text-gray-900">
+              Program
+            </h3>
+
+            <p className="text-gray-600">
+              Luni – Sâmbătă
+              <br />
+              11:00 – 17:00
+            </p>
+          </div>
+        </div>
+
+        <a
+          href="https://maps.app.goo.gl/mBagh8pNGe1LLq1CA"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-2 w-full bg-[#D4A847] text-white px-6 py-3 rounded-full hover:bg-[#c49a3d] transition-all hover:scale-[1.02] font-medium"
+        >
+          <MapPin className="w-5 h-5" />
+          Pornește navigația
+        </a>
+      </div>
+
+      {/* Harta Google */}
+      <div className="lg:col-span-2 rounded-2xl overflow-hidden shadow-lg min-h-[420px]">
+        <iframe
+          title="Locația PanAghia Autoservire Vatra Dornei"
+          src="https://www.google.com/maps?q=PanAghia%20Autoservire%20%26%20Delivery%2C%20Strada%20Dornelor%2010%2C%20Vatra%20Dornei&output=embed"
+          width="100%"
+          height="100%"
+          className="w-full min-h-[420px] border-0"
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+          allowFullScreen
+        />
+      </div>
+    </div>
+  </div>
+</section>
 
       {/* Contact CTA Section */}
       <section className="py-16 bg-gray-900 text-white" data-testid="contact-cta-section">
