@@ -62,6 +62,50 @@ const AdminMenu = () => {
   };
 
   const handleDeleteItem = async (itemId) => {
+    const handleToggleAvailability = async (item) => {
+  const newAvailability = !item.is_available;
+
+  try {
+    // Actualizăm imediat vizual, fără să așteptăm reîncărcarea paginii
+    setItems((currentItems) =>
+      currentItems.map((currentItem) =>
+        currentItem.id === item.id
+          ? {
+              ...currentItem,
+              is_available: newAvailability,
+            }
+          : currentItem
+      )
+    );
+
+    await adminApi.updateItem(item.id, {
+      category_id: item.category_id,
+      name: item.name,
+      description: item.description,
+      price: item.price,
+      image: item.image,
+      is_popular: item.is_popular,
+      is_available: newAvailability,
+    });
+  } catch (err) {
+    // Dacă serverul dă eroare, revenim la valoarea inițială
+    setItems((currentItems) =>
+      currentItems.map((currentItem) =>
+        currentItem.id === item.id
+          ? {
+              ...currentItem,
+              is_available: item.is_available,
+            }
+          : currentItem
+      )
+    );
+
+    alert(
+      'Disponibilitatea nu a putut fi modificată: ' +
+        err.message
+    );
+  }
+};
     if (!window.confirm('Sigur doriți să ștergeți acest produs?')) return;
     try {
       await adminApi.deleteItem(itemId);
@@ -149,94 +193,7 @@ const AdminMenu = () => {
         </div>
       </div>
 
-      {/* Items Tab */}
-      {activeTab === 'items' && (
-        <>
-          <div className="flex items-center gap-4 mb-6">
-            <div className="flex-1 flex flex-wrap gap-2">
-              <button
-                onClick={() => setSelectedCategory('all')}
-                className={`px-4 py-2 rounded-xl font-medium transition-colors ${
-                  selectedCategory === 'all' ? 'bg-[#D4A847] text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                Toate
-              </button>
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-4 py-2 rounded-xl font-medium transition-colors ${
-                    selectedCategory === cat.id ? 'bg-[#D4A847] text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {cat.name}
-                </button>
-              ))}
-            </div>
-            <button
-              onClick={() => {
-                setEditingItem(null);
-                setShowItemModal(true);
-              }}
-              className="bg-[#D4A847] text-white px-4 py-2 rounded-xl hover:bg-[#c49a3d] transition-colors flex items-center gap-2"
-            >
-              <Plus className="w-5 h-5" />
-              <span className="hidden sm:inline">Adaugă Produs</span>
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredItems.map((item) => (
-              <div key={item.id} className="bg-white rounded-2xl overflow-hidden shadow-sm">
-                <div className="relative h-40">
-                  <img 
-                    src={item.image} 
-                    alt={item.name}
-                    className="w-full h-full object-cover"
-                  />
-                  {item.is_popular && (
-                    <span className="absolute top-2 left-2 bg-[#D4A847] text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
-                      <Star className="w-3 h-3 fill-white" />
-                      Popular
-                    </span>
-                  )}
-                  {!item.is_available && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                      <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm">Indisponibil</span>
-                    </div>
-                  )}
-                </div>
-                <div className="p-4">
-                  <h3 className="font-semibold text-gray-900">{item.name}</h3>
-                  <p className="text-sm text-gray-600 mt-1 line-clamp-2">{item.description}</p>
-                  <div className="flex items-center justify-between mt-4">
-                    <span className="text-xl font-bold text-[#D4A847]">{item.price} lei</span>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => {
-                          setEditingItem(item);
-                          setShowItemModal(true);
-                        }}
-                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                      >
-                        <Pencil className="w-4 h-4 text-gray-600" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteItem(item.id)}
-                        className="p-2 hover:bg-red-50 rounded-lg transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4 text-red-500" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-
+      
       {/* Categories Tab */}
       {activeTab === 'categories' && (
         <>

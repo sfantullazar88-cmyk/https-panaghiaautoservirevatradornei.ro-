@@ -1,0 +1,32 @@
+{
+  "short_name": "PanAghia",
+  "name": "PanAghia Autoservire & Delivery",
+  "description": "Meniul zilei, mâncare gătită, livrare la domiciliu și catering în Vatra Dornei.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#D4A847",
+  "background_color": "#FFF8E7",
+  "lang": "ro",
+  "categories": [
+    "food",
+    "shopping",
+    "lifestyle"
+  ],
+  "icons": [
+    {
+      "src": "/logo192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

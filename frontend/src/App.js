@@ -14,6 +14,7 @@ import Contact from "./pages/Contact";
 import Order from "./pages/Order";
 import { messaging, getToken, onMessage } from "./firebase";
 import { HelmetProvider } from "react-helmet-async";
+import InstallPWA from "./components/InstallPWA";
 
 // Legal pages imports
 import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
@@ -142,6 +143,7 @@ function AppContent() {
 
   return (
     <div className="App">
+      <InstallPWA />
       <Routes>
         {/* Public Routes */}
         <Route
